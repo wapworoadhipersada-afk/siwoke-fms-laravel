@@ -13,3 +13,11 @@ arch('master data does not depend on transactional modules')
 arch('iam does not depend on other modules')
     ->expect('Modules\IAM')
     ->not->toUse(['Modules\Ticket', 'Modules\Asset', 'Modules\Master', 'Modules\Integration']);
+
+arch('shared kernel does not depend on any feature module')
+    ->expect('Modules\Shared')
+    ->not->toUse(['Modules\IAM', 'Modules\Master', 'Modules\Asset', 'Modules\Ticket', 'Modules\Integration']);
+
+arch('modules do not reach into the web layer of other modules')
+    ->expect(['Modules\Master\Application', 'Modules\Master\Domain'])
+    ->not->toUse(['Modules\IAM\Http', 'Modules\Master\Http']);

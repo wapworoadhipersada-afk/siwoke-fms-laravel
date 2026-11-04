@@ -60,13 +60,18 @@ class Merchant extends Model
 
     /**
      * A merchant is visible through its sites, so a restricted user sees only merchants operating in their area.
+     * A merchant that has no site yet is visible to everyone who may see merchants, otherwise the person
+     * who just created it could not reach it to add the first site.
      *
      * @param  Builder<Merchant>  $query
      * @return Builder<Merchant>
      */
     public function scopeVisibleTo(Builder $query, User $user): Builder
     {
-        return $query->whereIn('merchants.id', MerchantSite::query()->visibleTo($user)->select('merchant_sites.merchant_id'));
+        return $query->where(function (Builder $query) use ($user): void {
+            $query->whereIn('merchants.id', MerchantSite::query()->visibleTo($user)->select('merchant_sites.merchant_id'))
+                ->orDoesntHave('sites');
+        });
     }
 
     public function getActivitylogOptions(): LogOptions

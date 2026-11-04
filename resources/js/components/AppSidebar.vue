@@ -1,6 +1,19 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, LayoutGrid } from '@lucide/vue';
+import { Link, usePage } from '@inertiajs/vue3';
+import {
+    BookOpen,
+    CreditCard,
+    FolderGit2,
+    Landmark,
+    LayoutGrid,
+    MapPinned,
+    Store,
+} from '@lucide/vue';
+import { computed } from 'vue';
+import LocationController from '@/actions/Modules/Master/Http/Web/Controllers/LocationController';
+import MerchantController from '@/actions/Modules/Master/Http/Web/Controllers/MerchantController';
+import TerminalController from '@/actions/Modules/Master/Http/Web/Controllers/TerminalController';
+import VendorController from '@/actions/Modules/Master/Http/Web/Controllers/VendorController';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -24,6 +37,21 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
 ];
+
+const page = usePage();
+const permissions = computed(() => page.props.auth.permissions);
+
+// Hiding a link is only a convenience; the server checks every request.
+const masterNavItems = computed<NavItem[]>(() =>
+    [
+        { permission: 'master.vendor.view', title: 'Vendor', href: VendorController.index(), icon: Landmark },
+        { permission: 'master.location.view', title: 'Lokasi', href: LocationController.index(), icon: MapPinned },
+        { permission: 'master.merchant.view', title: 'Merchant', href: MerchantController.index(), icon: Store },
+        { permission: 'master.terminal.view', title: 'TID', href: TerminalController.index(), icon: CreditCard },
+    ]
+        .filter((item) => permissions.value.includes(item.permission))
+        .map(({ title, href, icon }) => ({ title, href, icon })),
+);
 
 const footerNavItems: NavItem[] = [
     {
@@ -55,6 +83,11 @@ const footerNavItems: NavItem[] = [
 
         <SidebarContent>
             <NavMain :items="mainNavItems" />
+            <NavMain
+                v-if="masterNavItems.length"
+                :items="masterNavItems"
+                label="Master Data"
+            />
         </SidebarContent>
 
         <SidebarFooter>
