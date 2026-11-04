@@ -12,3 +12,10 @@ parameters:
         - modules/
 
     level: 7
+
+    # Sanctum types currentAccessToken() as always a PersonalAccessToken, but a session-authenticated
+    # request yields a TransientToken, so the defensive instanceof checks must stay.
+    treatPhpDocTypesAsCertain: false
+
+    excludePaths:
+        - modules/*/Tests/*

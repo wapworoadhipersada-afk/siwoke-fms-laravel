@@ -40,27 +40,39 @@ final class LogAccessChange
     }
 
     /**
-     * @return list<string>
+     * @return array<int, string>
      */
     private function roleNames(mixed $rolesOrIds): array
     {
         return Collection::wrap($rolesOrIds)
-            ->map(static fn (mixed $item): string => $item instanceof RoleContract
-                ? (string) $item->name
-                : (Role::query()->find($item)?->name ?? (string) $item))
+            ->map(static function (mixed $item): string {
+                if ($item instanceof RoleContract) {
+                    return (string) $item->name;
+                }
+
+                $role = is_int($item) || is_string($item) ? Role::query()->find($item) : null;
+
+                return $role instanceof Role ? $role->name : (is_scalar($item) ? (string) $item : '');
+            })
             ->values()
             ->all();
     }
 
     /**
-     * @return list<string>
+     * @return array<int, string>
      */
     private function permissionNames(mixed $permissionsOrIds): array
     {
         return Collection::wrap($permissionsOrIds)
-            ->map(static fn (mixed $item): string => $item instanceof PermissionContract
-                ? (string) $item->name
-                : (Permission::query()->find($item)?->name ?? (string) $item))
+            ->map(static function (mixed $item): string {
+                if ($item instanceof PermissionContract) {
+                    return (string) $item->name;
+                }
+
+                $permission = is_int($item) || is_string($item) ? Permission::query()->find($item) : null;
+
+                return $permission instanceof Permission ? $permission->name : (is_scalar($item) ? (string) $item : '');
+            })
             ->values()
             ->all();
     }
