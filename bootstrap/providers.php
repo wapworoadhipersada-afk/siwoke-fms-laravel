@@ -6,6 +6,7 @@ use Modules\Asset\AssetServiceProvider;
 use Modules\IAM\IAMServiceProvider;
 use Modules\Master\MasterServiceProvider;
 use Modules\Shared\SharedServiceProvider;
+use Modules\Ticket\TicketServiceProvider;
 
 return [
     AppServiceProvider::class,
@@ -14,4 +15,5 @@ return [
     MasterServiceProvider::class,
     AssetServiceProvider::class,
     SharedServiceProvider::class,
+    TicketServiceProvider::class,
 ];
