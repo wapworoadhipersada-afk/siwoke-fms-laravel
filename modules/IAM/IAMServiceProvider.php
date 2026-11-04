@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Modules\IAM;
 
 use App\Models\User;
+use Illuminate\Auth\Events\Failed;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
@@ -16,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Modules\IAM\Application\Listeners\LogAccessChange;
+use Modules\IAM\Application\Listeners\LogWebAuthentication;
 use Modules\IAM\Domain\Enums\RoleName;
 use Modules\IAM\Http\Api\V1\Middleware\EnsureMobileSession;
 use Spatie\Permission\Events\PermissionAttachedEvent;
@@ -45,6 +49,8 @@ final class IAMServiceProvider extends ServiceProvider
 
     private function registerAuditListeners(): void
     {
+        Event::listen([Login::class, Failed::class, Logout::class], LogWebAuthentication::class);
+
         Event::listen(
             [RoleAttachedEvent::class, RoleDetachedEvent::class, PermissionAttachedEvent::class, PermissionDetachedEvent::class],
             LogAccessChange::class,
