@@ -16,6 +16,9 @@ final class Permissions
 
     public const AUDIT_VIEW = 'audit.view';
 
+    /** Lifts the location-scope restriction: the holder sees data from every area. */
+    public const DATA_SCOPE_ALL = 'data.scope.all';
+
     public const IAM_USER_VIEW = 'iam.user.view';
 
     public const IAM_USER_CREATE = 'iam.user.create';

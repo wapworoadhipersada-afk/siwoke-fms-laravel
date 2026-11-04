@@ -47,7 +47,7 @@ class RolesAndPermissionsSeeder extends Seeder
 
             RoleName::Managerial->value => [
                 ...$views,
-                P::IAM_USER_VIEW, P::AUDIT_VIEW, P::INTEGRATION_LOG_VIEW,
+                P::IAM_USER_VIEW, P::AUDIT_VIEW, P::INTEGRATION_LOG_VIEW, P::DATA_SCOPE_ALL,
                 P::REPORT_EXPORT, P::DOCUMENT_BA_DOWNLOAD,
             ],
 
