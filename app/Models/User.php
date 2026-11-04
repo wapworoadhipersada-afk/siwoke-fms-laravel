@@ -7,17 +7,32 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Laravel\Sanctum\HasApiTokens;
+use Modules\IAM\Domain\Enums\UserType;
+use Modules\IAM\Domain\Models\Device;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
+use Spatie\Permission\Traits\HasRoles;
 
 /**
  * @property int $id
+ * @property string $ulid
  * @property string $name
  * @property string $email
+ * @property string|null $phone
+ * @property string|null $employee_no
+ * @property UserType $user_type
+ * @property bool $is_active
+ * @property Carbon|null $last_login_at
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property string|null $two_factor_secret
@@ -26,13 +41,48 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string|null $remember_token
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  */
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'phone', 'employee_no', 'user_type', 'is_active'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+    use HasApiTokens, HasFactory, HasRoles, LogsActivity, Notifiable, PasskeyAuthenticatable, SoftDeletes, TwoFactorAuthenticatable;
+
+    /**
+     * Database defaults, mirrored so a freshly created model is usable before it is reloaded.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'user_type' => 'staff',
+        'is_active' => true,
+    ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (User $user): void {
+            $user->ulid ??= (string) Str::ulid();
+        });
+    }
+
+    /**
+     * @return HasMany<Device, $this>
+     */
+    public function devices(): HasMany
+    {
+        return $this->hasMany(Device::class);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('iam')
+            ->logOnly(['name', 'email', 'phone', 'employee_no', 'user_type', 'is_active'])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges();
+    }
 
     /**
      * Get the attributes that should be cast.
@@ -45,6 +95,9 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
+            'user_type' => UserType::class,
+            'is_active' => 'boolean',
+            'last_login_at' => 'datetime',
         ];
     }
 }
