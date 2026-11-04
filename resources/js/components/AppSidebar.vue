@@ -1,15 +1,25 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import {
+    ArrowLeftRight,
     BookOpen,
+    Boxes,
     CreditCard,
     FolderGit2,
     Landmark,
     LayoutGrid,
     MapPinned,
+    Package,
     Store,
+    Tags,
+    Warehouse,
 } from '@lucide/vue';
 import { computed } from 'vue';
+import AssetController from '@/actions/Modules/Asset/Http/Web/Controllers/AssetController';
+import AssetModelController from '@/actions/Modules/Asset/Http/Web/Controllers/AssetModelController';
+import HandoverController from '@/actions/Modules/Asset/Http/Web/Controllers/HandoverController';
+import StockController from '@/actions/Modules/Asset/Http/Web/Controllers/StockController';
+import WarehouseController from '@/actions/Modules/Asset/Http/Web/Controllers/WarehouseController';
 import LocationController from '@/actions/Modules/Master/Http/Web/Controllers/LocationController';
 import MerchantController from '@/actions/Modules/Master/Http/Web/Controllers/MerchantController';
 import TerminalController from '@/actions/Modules/Master/Http/Web/Controllers/TerminalController';
@@ -53,6 +63,18 @@ const masterNavItems = computed<NavItem[]>(() =>
         .map(({ title, href, icon }) => ({ title, href, icon })),
 );
 
+const assetNavItems = computed<NavItem[]>(() =>
+    [
+        { permission: 'asset.view', title: 'Aset', href: AssetController.index(), icon: Package },
+        { permission: 'asset.view', title: 'Stok', href: StockController.index(), icon: Boxes },
+        { permission: 'asset.view', title: 'Serah-terima', href: HandoverController.index(), icon: ArrowLeftRight },
+        { permission: 'asset.view', title: 'Gudang', href: WarehouseController.index(), icon: Warehouse },
+        { permission: 'asset.view', title: 'Jenis aset', href: AssetModelController.index(), icon: Tags },
+    ]
+        .filter((item) => permissions.value.includes(item.permission))
+        .map(({ title, href, icon }) => ({ title, href, icon })),
+);
+
 const footerNavItems: NavItem[] = [
     {
         title: 'Repository',
@@ -87,6 +109,11 @@ const footerNavItems: NavItem[] = [
                 v-if="masterNavItems.length"
                 :items="masterNavItems"
                 label="Master Data"
+            />
+            <NavMain
+                v-if="assetNavItems.length"
+                :items="assetNavItems"
+                label="Aset"
             />
         </SidebarContent>
 

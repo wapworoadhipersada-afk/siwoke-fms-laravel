@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Modules\Asset\Domain\Enums\HolderType;
 use Modules\Asset\Domain\Enums\MovementType;
+use Modules\Asset\Domain\ValueObjects\Holder;
 use Modules\Shared\Domain\Concerns\HasPublicUlid;
 
 /**
@@ -43,6 +44,16 @@ class AssetMovement extends Model
     use HasPublicUlid;
 
     public const UPDATED_AT = null;
+
+    public function from(): Holder
+    {
+        return new Holder($this->from_holder_type ?? HolderType::External, $this->from_holder_id);
+    }
+
+    public function to(): Holder
+    {
+        return new Holder($this->to_holder_type ?? HolderType::External, $this->to_holder_id);
+    }
 
     /**
      * @return HasMany<AssetMovementItem, $this>
