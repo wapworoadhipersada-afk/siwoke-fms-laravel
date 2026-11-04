@@ -4,6 +4,7 @@ import {
     ArrowLeftRight,
     BookOpen,
     Boxes,
+    ClipboardList,
     CreditCard,
     FolderGit2,
     Landmark,
@@ -18,6 +19,7 @@ import { computed } from 'vue';
 import AssetController from '@/actions/Modules/Asset/Http/Web/Controllers/AssetController';
 import AssetModelController from '@/actions/Modules/Asset/Http/Web/Controllers/AssetModelController';
 import HandoverController from '@/actions/Modules/Asset/Http/Web/Controllers/HandoverController';
+import TicketController from '@/actions/Modules/Ticket/Http/Web/Controllers/TicketController';
 import StockController from '@/actions/Modules/Asset/Http/Web/Controllers/StockController';
 import WarehouseController from '@/actions/Modules/Asset/Http/Web/Controllers/WarehouseController';
 import LocationController from '@/actions/Modules/Master/Http/Web/Controllers/LocationController';
@@ -52,6 +54,12 @@ const page = usePage();
 const permissions = computed(() => page.props.auth.permissions);
 
 // Hiding a link is only a convenience; the server checks every request.
+const operationsNavItems = computed<NavItem[]>(() =>
+    [{ permission: 'ticket.view', title: 'Tiket', href: TicketController.index(), icon: ClipboardList }]
+        .filter((item) => permissions.value.includes(item.permission))
+        .map(({ title, href, icon }) => ({ title, href, icon })),
+);
+
 const masterNavItems = computed<NavItem[]>(() =>
     [
         { permission: 'master.vendor.view', title: 'Vendor', href: VendorController.index(), icon: Landmark },
@@ -105,6 +113,11 @@ const footerNavItems: NavItem[] = [
 
         <SidebarContent>
             <NavMain :items="mainNavItems" />
+            <NavMain
+                v-if="operationsNavItems.length"
+                :items="operationsNavItems"
+                label="Operasional"
+            />
             <NavMain
                 v-if="masterNavItems.length"
                 :items="masterNavItems"
