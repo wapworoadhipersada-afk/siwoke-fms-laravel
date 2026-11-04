@@ -42,6 +42,13 @@ class Location extends Model
 {
     use HasPublicUlid, LogsActivity, SoftDeletes;
 
+    /**
+     * Database default, mirrored so a model created in code is usable before it is reloaded.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = ['is_active' => true];
+
     protected static function booted(): void
     {
         // The path embeds the row's own id, which only exists once the row has been inserted.

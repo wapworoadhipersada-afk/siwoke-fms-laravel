@@ -30,6 +30,13 @@ class Vendor extends Model
     use HasPublicUlid, LogsActivity, SoftDeletes;
 
     /**
+     * Database default, mirrored so a model created in code is usable before it is reloaded.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = ['is_active' => true];
+
+    /**
      * @return HasMany<Merchant, $this>
      */
     public function merchants(): HasMany

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Modules\Asset\Database\Seeders\AssetCatalogSeeder;
 use Modules\IAM\Database\Seeders\DevUserSeeder;
 use Modules\IAM\Database\Seeders\RolesAndPermissionsSeeder;
 
@@ -14,6 +15,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(RolesAndPermissionsSeeder::class);
+        $this->call(AssetCatalogSeeder::class);
         $this->call(DevUserSeeder::class);
     }
 }

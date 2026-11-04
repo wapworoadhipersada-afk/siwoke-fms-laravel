@@ -61,6 +61,8 @@ final class Permissions
 
     public const ASSET_STOCK_ADJUST = 'asset.stock.adjust';
 
+    public const ASSET_CATALOG_MANAGE = 'asset.catalog.manage';
+
     public const TICKET_VIEW = 'ticket.view';
 
     public const TICKET_CREATE = 'ticket.create';
