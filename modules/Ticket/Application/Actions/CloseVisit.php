@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Modules\Ticket\Application\Contracts\ClosureGuard;
 use Modules\Ticket\Application\DTOs\ActionContext;
+use Modules\Ticket\Application\Services\SettleVisitAssets;
 use Modules\Ticket\Application\Services\TicketWorkflow;
 use Modules\Ticket\Domain\Enums\ReasonType;
 use Modules\Ticket\Domain\Enums\TicketEvent;
@@ -31,6 +32,7 @@ final class CloseVisit
     public function __construct(
         private readonly TicketWorkflow $workflow,
         private readonly Container $container,
+        private readonly SettleVisitAssets $assets,
     ) {}
 
     /**
@@ -95,6 +97,9 @@ final class CloseVisit
             ]);
 
             $this->workflow->closeAssignment($visit, $at, 'Kunjungan selesai');
+
+            // Assets noted on the visit change hands now, inside this transaction: if the ledger refuses one, the close fails whole.
+            $this->assets->handle($current, $visit, $outcome, $actor, $at, $context);
 
             $this->workflow->transition($current, $status, $event, $actor, $context, $at, $visit, $reason?->name, array_filter([
                 'reason_code' => $reason?->code,

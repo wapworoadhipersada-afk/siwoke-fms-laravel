@@ -6,10 +6,16 @@ namespace Modules\Asset;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Modules\Asset\Application\Guards\TerminalHoldsNoAssets;
 use Modules\Asset\Console\ReconcileAssetsCommand;
 
 final class AssetServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+        $this->app->tag([TerminalHoldsNoAssets::class], 'master.terminal_deletion_guards');
+    }
+
     public function boot(): void
     {
         $this->loadMigrationsFrom(__DIR__.'/Database/Migrations');

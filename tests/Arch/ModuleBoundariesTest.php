@@ -25,3 +25,15 @@ arch('modules do not reach into the web layer of other modules')
 arch('the document module knows only the shared kernel, never what it documents')
     ->expect('Modules\Document')
     ->not->toUse(['Modules\Ticket', 'Modules\Asset', 'Modules\Master', 'Modules\Integration', 'Modules\IAM\Http']);
+
+arch('operational modules never depend on the integration or report modules')
+    ->expect(['Modules\Ticket', 'Modules\Asset', 'Modules\Master', 'Modules\Document', 'Modules\IAM', 'Modules\Shared'])
+    ->not->toUse(['Modules\Integration', 'Modules\Report']);
+
+arch('the integration module does not depend on reports')
+    ->expect('Modules\Integration')
+    ->not->toUse('Modules\Report');
+
+arch('nothing depends on the report module, it only reads')
+    ->expect('Modules\Report')
+    ->not->toBeUsedIn(['Modules\Ticket', 'Modules\Asset', 'Modules\Master', 'Modules\Document', 'Modules\IAM', 'Modules\Integration']);

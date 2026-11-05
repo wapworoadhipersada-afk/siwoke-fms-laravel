@@ -38,7 +38,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property Carbon|null $captured_at
  * @property string|null $latitude
  * @property string|null $longitude
- * @property int $uploaded_by
+ * @property int|null $uploaded_by
  * @property int|null $device_id
  * @property string|null $client_uuid
  * @property Carbon|null $created_at

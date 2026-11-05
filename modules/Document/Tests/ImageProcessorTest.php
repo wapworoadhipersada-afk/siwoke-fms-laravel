@@ -153,7 +153,7 @@ describe('what it refuses', function () {
     it('rejects an image too large for the memory this process has', function () {
         $original = ini_get('memory_limit');
         // Relative to what is in use now: PHP refuses a limit below current usage, and a full suite uses a lot.
-        ini_set('memory_limit', (string) (memory_get_usage() + 30_000_000));
+        ini_set('memory_limit', (string) (memory_get_usage(true) + 30_000_000));
 
         try {
             // 20 megapixels needs ~100 MB to decode, far beyond the 30 MB of headroom left.

@@ -28,6 +28,16 @@ final class ProblemException extends HttpException
         return new self(403, $code, 'Forbidden', $detail);
     }
 
+    public static function notFound(string $code, string $detail): self
+    {
+        return new self(404, $code, 'Not Found', $detail);
+    }
+
+    public static function conflict(string $code, string $detail): self
+    {
+        return new self(409, $code, 'Conflict', $detail);
+    }
+
     public function render(): JsonResponse
     {
         return response()->json([

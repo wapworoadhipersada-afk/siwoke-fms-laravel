@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
+use Modules\Ticket\Http\Api\V1\Controllers\TicketAssetController;
 use Modules\Ticket\Http\Api\V1\Controllers\TicketAttachmentController;
 use Modules\Ticket\Http\Api\V1\Controllers\TicketController;
 
@@ -20,5 +21,9 @@ Route::middleware(['auth:sanctum', 'mobile.session', 'throttle:mobile'])->group(
 
     Route::get('tickets/{ticket}/attachments', [TicketAttachmentController::class, 'index'])->name('tickets.attachments.index');
     Route::post('tickets/{ticket}/attachments', [TicketAttachmentController::class, 'store'])->middleware('throttle:uploads')->name('tickets.attachments.store');
+    Route::get('tickets/{ticket}/assets', [TicketAssetController::class, 'index'])->name('tickets.assets.index');
+    Route::post('tickets/{ticket}/assets', [TicketAssetController::class, 'store'])->name('tickets.assets.store');
+    Route::delete('tickets/{ticket}/assets/{line}', [TicketAssetController::class, 'destroy'])->name('tickets.assets.destroy');
+
     Route::delete('attachments/{attachment}', [TicketAttachmentController::class, 'destroy'])->name('attachments.destroy');
 });

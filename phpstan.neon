@@ -19,3 +19,9 @@ parameters:
 
     excludePaths:
         - modules/*/Tests/*
+
+    # bootstrap/app.php runs before the configuration is loaded, so reading the environment there is the only way.
+    ignoreErrors:
+        -
+            identifier: larastan.noEnvCallsOutsideOfConfig
+            path: bootstrap/app.php

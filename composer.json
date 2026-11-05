@@ -33,7 +33,8 @@
         "nunomaduro/collision": "^8.9.3",
         "pestphp/pest": "^5.3",
         "pestphp/pest-plugin-drift": "^5.0",
-        "pestphp/pest-plugin-laravel": "^5.0"
+        "pestphp/pest-plugin-laravel": "^5.0",
+        "smalot/pdfparser": "^2.13"
     },
     "autoload": {
         "psr-4": {

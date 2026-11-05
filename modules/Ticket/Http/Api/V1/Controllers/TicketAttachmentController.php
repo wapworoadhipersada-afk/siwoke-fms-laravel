@@ -68,6 +68,7 @@ final class TicketAttachmentController extends Controller
         return response()->json(['data' => Attachment::query()
             ->where('attachable_type', 'ticket_visit')
             ->whereIn('attachable_id', $visitIds)
+            ->where('kind', '!=', AttachmentKind::BeritaAcara->value)
             ->orderBy('id')
             ->get()
             ->map(fn (Attachment $attachment): array => $this->payload($attachment))

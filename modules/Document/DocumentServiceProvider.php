@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Modules\Document\Console\PruneOrphanFilesCommand;
 use Modules\Document\Console\VerifyAttachmentsCommand;
 
 final class DocumentServiceProvider extends ServiceProvider
@@ -29,7 +30,7 @@ final class DocumentServiceProvider extends ServiceProvider
         ));
 
         if ($this->app->runningInConsole()) {
-            $this->commands([VerifyAttachmentsCommand::class]);
+            $this->commands([VerifyAttachmentsCommand::class, PruneOrphanFilesCommand::class]);
         }
     }
 }

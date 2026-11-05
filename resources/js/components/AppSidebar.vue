@@ -6,8 +6,11 @@ import {
     Boxes,
     ClipboardList,
     CreditCard,
+    FileSpreadsheet,
     FolderGit2,
+    KeyRound,
     Landmark,
+    ScrollText,
     LayoutGrid,
     MapPinned,
     Package,
@@ -19,6 +22,9 @@ import { computed } from 'vue';
 import AssetController from '@/actions/Modules/Asset/Http/Web/Controllers/AssetController';
 import AssetModelController from '@/actions/Modules/Asset/Http/Web/Controllers/AssetModelController';
 import HandoverController from '@/actions/Modules/Asset/Http/Web/Controllers/HandoverController';
+import IntegrationClientController from '@/actions/Modules/Integration/Http/Web/Controllers/IntegrationClientController';
+import IntegrationLogController from '@/actions/Modules/Integration/Http/Web/Controllers/IntegrationLogController';
+import TicketReportController from '@/actions/Modules/Report/Http/Web/Controllers/TicketReportController';
 import TicketController from '@/actions/Modules/Ticket/Http/Web/Controllers/TicketController';
 import StockController from '@/actions/Modules/Asset/Http/Web/Controllers/StockController';
 import WarehouseController from '@/actions/Modules/Asset/Http/Web/Controllers/WarehouseController';
@@ -55,7 +61,10 @@ const permissions = computed(() => page.props.auth.permissions);
 
 // Hiding a link is only a convenience; the server checks every request.
 const operationsNavItems = computed<NavItem[]>(() =>
-    [{ permission: 'ticket.view', title: 'Tiket', href: TicketController.index(), icon: ClipboardList }]
+    [
+        { permission: 'ticket.view', title: 'Tiket', href: TicketController.index(), icon: ClipboardList },
+        { permission: 'report.view', title: 'Laporan tiket', href: TicketReportController.index(), icon: FileSpreadsheet },
+    ]
         .filter((item) => permissions.value.includes(item.permission))
         .map(({ title, href, icon }) => ({ title, href, icon })),
 );
@@ -78,6 +87,15 @@ const assetNavItems = computed<NavItem[]>(() =>
         { permission: 'asset.view', title: 'Serah-terima', href: HandoverController.index(), icon: ArrowLeftRight },
         { permission: 'asset.view', title: 'Gudang', href: WarehouseController.index(), icon: Warehouse },
         { permission: 'asset.view', title: 'Jenis aset', href: AssetModelController.index(), icon: Tags },
+    ]
+        .filter((item) => permissions.value.includes(item.permission))
+        .map(({ title, href, icon }) => ({ title, href, icon })),
+);
+
+const integrationNavItems = computed<NavItem[]>(() =>
+    [
+        { permission: 'integration.client.manage', title: 'Klien integrasi', href: IntegrationClientController.index(), icon: KeyRound },
+        { permission: 'integration.log.view', title: 'Log integrasi', href: IntegrationLogController.index(), icon: ScrollText },
     ]
         .filter((item) => permissions.value.includes(item.permission))
         .map(({ title, href, icon }) => ({ title, href, icon })),
@@ -127,6 +145,11 @@ const footerNavItems: NavItem[] = [
                 v-if="assetNavItems.length"
                 :items="assetNavItems"
                 label="Aset"
+            />
+            <NavMain
+                v-if="integrationNavItems.length"
+                :items="integrationNavItems"
+                label="Integrasi"
             />
         </SidebarContent>
 

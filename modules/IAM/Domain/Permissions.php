@@ -83,6 +83,8 @@ final class Permissions
 
     public const DOCUMENT_BA_DOWNLOAD = 'document.ba.download';
 
+    public const DOCUMENT_BA_GENERATE = 'document.ba.generate';
+
     public const INTEGRATION_LOG_VIEW = 'integration.log.view';
 
     public const INTEGRATION_CLIENT_MANAGE = 'integration.client.manage';

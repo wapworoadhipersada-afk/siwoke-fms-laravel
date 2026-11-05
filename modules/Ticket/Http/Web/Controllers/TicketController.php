@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Modules\Document\Domain\Enums\AttachmentKind;
 use Modules\Document\Domain\Models\Attachment;
 use Modules\IAM\Domain\Enums\UserType;
 use Modules\IAM\Domain\Permissions;
@@ -24,7 +25,10 @@ use Modules\Ticket\Application\Actions\ReopenTicket;
 use Modules\Ticket\Application\Actions\UnassignTicket;
 use Modules\Ticket\Domain\Enums\TicketPriority;
 use Modules\Ticket\Domain\Enums\TicketStatus;
+use Modules\Ticket\Domain\Enums\VisitOutcome;
+use Modules\Ticket\Domain\Models\BeritaAcara;
 use Modules\Ticket\Domain\Models\Ticket;
+use Modules\Ticket\Domain\Models\TicketAssetLine;
 use Modules\Ticket\Domain\Models\TicketAssignment;
 use Modules\Ticket\Domain\Models\TicketStatusHistory;
 use Modules\Ticket\Domain\Models\TicketType;
@@ -167,6 +171,7 @@ final class TicketController extends ModuleController
         $files = Attachment::query()
             ->where('attachable_type', 'ticket_visit')
             ->whereIn('attachable_id', $visits->pluck('id'))
+            ->where('kind', '!=', AttachmentKind::BeritaAcara->value)
             ->with('uploader')
             ->orderBy('id')
             ->get();
@@ -224,12 +229,13 @@ final class TicketController extends ModuleController
                 'reason' => $visit->reasonCode?->name,
                 'notes' => $visit->notes,
                 'distance_m' => $visit->arrival_distance_m,
+                'reportable' => in_array($visit->outcome, [VisitOutcome::Finish, VisitOutcome::Pending, VisitOutcome::DoneNegative], true),
             ])->values()->all(),
             'attachments' => $files->map(fn (Attachment $file): array => [
                 'visit_no' => (int) ($visitNumbers[$file->attachable_id] ?? 0),
                 'kind' => $file->kind->value,
                 'kind_label' => $file->kind->label(),
-                'uploader' => $file->uploader->name,
+                'uploader' => $file->uploader->name ?? 'Sistem',
                 'captured_at' => $file->captured_at?->toIso8601String(),
                 'uploaded_at' => $file->created_at?->toIso8601String(),
                 'width' => $file->width,
@@ -239,6 +245,27 @@ final class TicketController extends ModuleController
                 'url' => route('attachments.show', $file, false),
                 'thumbnail_url' => route('attachments.thumbnail', $file, false),
             ])->values()->all(),
+            'assetLines' => TicketAssetLine::query()->where('ticket_id', $ticket->id)->with(['asset', 'assetModel', 'movement'])->orderBy('id')->get()->map(fn (TicketAssetLine $line): array => [
+                'visit_no' => (int) ($visitNumbers[$line->visit_id] ?? 0),
+                'action_label' => $line->action->label(),
+                'item' => $line->asset === null ? $line->assetModel->displayName() : "{$line->assetModel->displayName()} — {$line->asset->serial_number}",
+                'quantity' => $line->quantity,
+                'notes' => $line->notes,
+                'state' => $line->isApplied() ? 'Tercatat di buku aset' : ($line->voided_at !== null ? 'Dibatalkan' : 'Menunggu penutupan kunjungan'),
+                'movement_no' => $line->movement?->movement_no,
+            ])->values()->all(),
+            'beritaAcara' => $user->can(Permissions::DOCUMENT_BA_DOWNLOAD)
+                ? BeritaAcara::query()->where('ticket_id', $ticket->id)->orderBy('visit_id')->orderByDesc('revision')->get()->map(fn (BeritaAcara $report): array => [
+                    'ulid' => $report->ulid,
+                    'label' => $report->label(),
+                    'visit_no' => (int) ($visitNumbers[$report->visit_id] ?? 0),
+                    'outcome_label' => $report->outcome->label(),
+                    'is_current' => $report->is_current,
+                    'generated_at' => $report->generated_at->toIso8601String(),
+                    'reason' => $report->regenerate_reason,
+                    'url' => route('tickets.berita-acara.download', [$ticket, $report], false),
+                ])->values()->all()
+                : [],
             'assignments' => $assignments->map(fn (TicketAssignment $assignment): array => [
                 'technician' => $assignment->technician->name,
                 'assigned_by' => $assignment->assigner->name,
@@ -252,6 +279,7 @@ final class TicketController extends ModuleController
                 'unassign' => $user->can(Permissions::TICKET_ASSIGN) && in_array($status, [TicketStatus::Assigned, TicketStatus::Accepted], true),
                 'cancel' => $user->can(Permissions::TICKET_CANCEL) && in_array($status, [TicketStatus::Received, TicketStatus::Assigned, TicketStatus::Accepted, TicketStatus::OnTheWay, TicketStatus::Pending], true),
                 'reopen' => $user->can(Permissions::TICKET_REOPEN) && in_array($status, [TicketStatus::Finished, TicketStatus::DoneNegative], true),
+                'generate_ba' => $user->can(Permissions::DOCUMENT_BA_GENERATE),
             ],
         ]);
     }

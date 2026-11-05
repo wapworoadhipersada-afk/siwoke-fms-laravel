@@ -73,6 +73,28 @@ export type VisitEntry = {
     reason: string | null;
     notes: string | null;
     distance_m: number | null;
+    reportable: boolean;
+};
+
+export type AssetLineEntry = {
+    visit_no: number;
+    action_label: string;
+    item: string;
+    quantity: number;
+    notes: string | null;
+    state: string;
+    movement_no: string | null;
+};
+
+export type BeritaAcaraEntry = {
+    ulid: string;
+    label: string;
+    visit_no: number;
+    outcome_label: string;
+    is_current: boolean;
+    generated_at: string;
+    reason: string | null;
+    url: string;
 };
 
 export type AttachmentEntry = {

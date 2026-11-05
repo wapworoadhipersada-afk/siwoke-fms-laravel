@@ -28,4 +28,21 @@ return [
 
     'max_past_days' => (int) env('TICKET_MAX_PAST_DAYS', 7),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Berita Acara
+    |--------------------------------------------------------------------------
+    |
+    | A report is produced in the background whenever a visit ends. Switch auto_generate off to
+    | produce them only on request (tests do this so closing a ticket stays fast).
+    |
+    */
+
+    'berita_acara' => [
+        'auto_generate' => (bool) env('BA_AUTO_GENERATE', true),
+        'max_photos' => (int) env('BA_MAX_PHOTOS', 8),
+        // Times printed on the report are shown in the timezone of the people who sign it.
+        'timezone' => env('BA_TIMEZONE', 'Asia/Jakarta'),
+    ],
+
 ];

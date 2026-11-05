@@ -2,10 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
+// The dashboard itself lives in the Report module.
 Route::redirect('/', '/dashboard')->name('home');
-
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'Dashboard')->name('dashboard');
-});
 
 require __DIR__.'/settings.php';

@@ -21,7 +21,7 @@ final class CancelTicket
 {
     public function __construct(private readonly TicketWorkflow $workflow) {}
 
-    public function handle(Ticket $ticket, User $actor, string $reason): Ticket
+    public function handle(Ticket $ticket, ?User $actor, string $reason): Ticket
     {
         $reason = trim($reason);
 

@@ -55,7 +55,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 ...$views,
                 P::TICKET_CREATE, P::TICKET_UPDATE, P::TICKET_ASSIGN, P::TICKET_CANCEL, P::TICKET_REOPEN,
                 P::ASSET_TRANSFER, P::ASSET_TRANSFER_APPROVE,
-                P::DOCUMENT_BA_DOWNLOAD, P::REPORT_EXPORT,
+                P::DOCUMENT_BA_DOWNLOAD, P::DOCUMENT_BA_GENERATE, P::REPORT_EXPORT,
             ],
 
             RoleName::Coordinator->value => [
@@ -71,7 +71,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 P::MASTER_VENDOR_MANAGE, P::MASTER_LOCATION_MANAGE, P::MASTER_MERCHANT_MANAGE, P::MASTER_TERMINAL_MANAGE,
                 P::TICKET_CREATE, P::TICKET_UPDATE, P::TICKET_ASSIGN, P::TICKET_CANCEL,
                 P::ASSET_CREATE, P::ASSET_UPDATE, P::ASSET_TRANSFER, P::ASSET_CATALOG_MANAGE,
-                P::DOCUMENT_BA_DOWNLOAD,
+                P::DOCUMENT_BA_DOWNLOAD, P::DOCUMENT_BA_GENERATE,
             ],
 
             RoleName::Technician->value => [

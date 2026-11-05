@@ -14,6 +14,7 @@ use Modules\Ticket\Application\DTOs\ActionContext;
 use Modules\Ticket\Domain\Enums\TicketEvent;
 use Modules\Ticket\Domain\Enums\TicketStatus;
 use Modules\Ticket\Domain\Events\TicketStatusChanged;
+use Modules\Ticket\Domain\Events\TicketStatusRecorded;
 use Modules\Ticket\Domain\Models\Ticket;
 use Modules\Ticket\Domain\Models\TicketAssignment;
 use Modules\Ticket\Domain\Models\TicketStatusHistory;
@@ -153,6 +154,8 @@ final class TicketWorkflow
             'occurred_at' => $at,
         ]);
 
+        // Inside the transaction, so listeners that write to an outbox succeed or fail together with the change.
+        event(new TicketStatusRecorded($ticket->id, $history->id));
         DB::afterCommit(static fn () => event(new TicketStatusChanged($ticket->id, $history->id)));
 
         return $history;

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import BeritaAcaraController from '@/actions/Modules/Ticket/Http/Web/Controllers/BeritaAcaraController';
 import MerchantController from '@/actions/Modules/Master/Http/Web/Controllers/MerchantController';
 import TicketController from '@/actions/Modules/Ticket/Http/Web/Controllers/TicketController';
 import InputError from '@/components/InputError.vue';
@@ -19,8 +20,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { UlidOption } from '@/types/master';
 import type {
+    AssetLineEntry,
     AssignmentEntry,
     AttachmentEntry,
+    BeritaAcaraEntry,
     TicketDetail,
     TimelineEntry,
     VisitEntry,
@@ -32,8 +35,16 @@ const props = defineProps<{
     visits: VisitEntry[];
     assignments: AssignmentEntry[];
     attachments: AttachmentEntry[];
+    beritaAcara: BeritaAcaraEntry[];
+    assetLines: AssetLineEntry[];
     technicians: UlidOption[];
-    can: { assign: boolean; unassign: boolean; cancel: boolean; reopen: boolean };
+    can: {
+        assign: boolean;
+        unassign: boolean;
+        cancel: boolean;
+        reopen: boolean;
+        generate_ba: boolean;
+    };
 }>();
 
 defineOptions({
@@ -56,6 +67,11 @@ const hasActions = computed(
         props.can.cancel ||
         props.can.reopen,
 );
+
+const reportableVisits = computed(() => props.visits.filter((visit) => visit.reportable));
+
+const hasReport = (visitNo: number): boolean =>
+    props.beritaAcara.some((report) => report.visit_no === visitNo);
 
 // Evidence grouped by visit, so a rescheduled ticket shows each attempt's photos on their own.
 const evidenceByVisit = computed(() => {
@@ -286,6 +302,71 @@ function formatDate(iso: string | null): string {
                         </tr>
                     </tbody>
                 </table>
+            </div>
+        </section>
+
+        <section v-if="assetLines.length > 0" class="space-y-3">
+            <h2 class="text-lg font-medium">Aset pada kunjungan</h2>
+            <div class="overflow-x-auto rounded-lg border">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-muted/50 text-xs text-muted-foreground uppercase">
+                        <tr>
+                            <th class="px-4 py-3 font-medium">Kunjungan</th>
+                            <th class="px-4 py-3 font-medium">Tindakan</th>
+                            <th class="px-4 py-3 font-medium">Barang</th>
+                            <th class="px-4 py-3 font-medium">Jumlah</th>
+                            <th class="px-4 py-3 font-medium">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        <tr v-for="(line, index) in assetLines" :key="index">
+                            <td class="px-4 py-3">{{ line.visit_no }}</td>
+                            <td class="px-4 py-3">{{ line.action_label }}</td>
+                            <td class="px-4 py-3">
+                                {{ line.item }}
+                                <span v-if="line.notes" class="block text-xs text-muted-foreground">{{ line.notes }}</span>
+                            </td>
+                            <td class="px-4 py-3">{{ line.quantity }}</td>
+                            <td class="px-4 py-3">
+                                {{ line.state }}
+                                <span v-if="line.movement_no" class="block text-xs text-muted-foreground">{{ line.movement_no }}</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section v-if="beritaAcara.length > 0 ||(can.generate_ba && reportableVisits.length > 0)" class="space-y-3">
+            <h2 class="text-lg font-medium">Berita Acara</h2>
+            <ul v-if="beritaAcara.length > 0" class="divide-y rounded-lg border text-sm">
+                <li v-for="report in beritaAcara" :key="report.ulid" class="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
+                    <div>
+                        <p class="font-medium">
+                            {{ report.label }}
+                            <Badge v-if="!report.is_current" variant="outline" class="ml-2">Digantikan</Badge>
+                        </p>
+                        <p class="text-xs text-muted-foreground">
+                            Kunjungan {{ report.visit_no }} · {{ report.outcome_label }} · {{ formatDate(report.generated_at) }}
+                        </p>
+                        <p v-if="report.reason" class="text-xs text-muted-foreground">Alasan revisi: {{ report.reason }}</p>
+                    </div>
+                    <Button as-child variant="outline" size="sm">
+                        <a :href="report.url">Unduh PDF</a>
+                    </Button>
+                </li>
+            </ul>
+            <p v-else class="text-sm text-muted-foreground">Berita Acara sedang dibuat atau belum ada.</p>
+            <div v-if="can.generate_ba" class="flex flex-wrap gap-2">
+                <ReasonDialog
+                    v-for="visit in reportableVisits"
+                    :key="visit.visit_no"
+                    :form="BeritaAcaraController.store.form({ ticket: ticket.ulid, visitNo: visit.visit_no })"
+                    :label="hasReport(visit.visit_no) ? `Buat ulang BA kunjungan ${visit.visit_no}` : `Buat BA kunjungan ${visit.visit_no}`"
+                    title="Buat Berita Acara?"
+                    description="Berita Acara lama tidak dihapus; yang baru menjadi revisi dengan nomor yang sama. Jelaskan alasannya."
+                    confirm="Buat"
+                />
             </div>
         </section>
 
