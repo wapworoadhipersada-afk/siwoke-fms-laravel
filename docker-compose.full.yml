@@ -5,9 +5,9 @@
 services:
   redis:
     environment:
-      REDIS_PASSWORD: \${REDIS_PASSWORD:-secret}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-secret}
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli -a \"$\{REDIS_PASSWORD}\" ping | grep -q PONG"]
+      test: ["CMD-SHELL", "redis-cli -a \"$${REDIS_PASSWORD}\" ping | grep -q PONG"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -30,11 +30,11 @@ services:
       DB_PORT: 5432
       DB_DATABASE: fms
       DB_USERNAME: fms
-      DB_PASSWORD: \${DB_PASSWORD:-secret}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
       REDIS_CLIENT: phpredis
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: \${REDIS_PASSWORD:-secret}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-secret}
       CACHE_STORE: redis
       SESSION_DRIVER: redis
       QUEUE_CONNECTION: redis
@@ -67,11 +67,11 @@ services:
       DB_PORT: 5432
       DB_DATABASE: fms
       DB_USERNAME: fms
-      DB_PASSWORD: \${DB_PASSWORD:-secret}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
       REDIS_CLIENT: phpredis
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: \${REDIS_PASSWORD:-secret}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-secret}
       CACHE_STORE: redis
       SESSION_DRIVER: redis
       QUEUE_CONNECTION: redis
@@ -99,11 +99,11 @@ services:
       DB_PORT: 5432
       DB_DATABASE: fms
       DB_USERNAME: fms
-      DB_PASSWORD: \${DB_PASSWORD:-secret}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
       REDIS_CLIENT: phpredis
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: \${REDIS_PASSWORD:-secret}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-secret}
       CACHE_STORE: redis
       SESSION_DRIVER: redis
       QUEUE_CONNECTION: redis
