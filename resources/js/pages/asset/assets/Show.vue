@@ -85,11 +85,11 @@ function formatDate(iso: string): string {
 <template>
     <Head :title="asset.serial_number" />
 
-    <div class="flex flex-1 flex-col gap-6 p-4">
+    <div class="flex flex-1 flex-col gap-6">
         <div class="flex flex-wrap items-start justify-between gap-4">
             <div>
                 <h1
-                    class="flex items-center gap-3 font-mono text-xl font-semibold tracking-tight"
+                    class="flex items-center gap-3 font-mono text-xl font-semibold text-gray-800 dark:text-white/90"
                 >
                     {{ asset.serial_number }}
                     <Badge>{{ asset.status_label }}</Badge>
@@ -232,7 +232,7 @@ function formatDate(iso: string): string {
                 <li
                     v-for="entry in history"
                     :key="entry.movement_no"
-                    class="rounded-lg border p-4"
+                    class="panel p-4"
                 >
                     <div class="flex flex-wrap items-center justify-between gap-2">
                         <p class="font-medium">{{ entry.type_label }}</p>

@@ -38,15 +38,15 @@ const ok = (status: number | null): boolean => status !== null && status >= 200 
 <template>
     <Head title="Log integrasi" />
 
-    <div class="flex flex-1 flex-col gap-6 p-4">
+    <div class="flex flex-1 flex-col gap-6">
         <div>
-            <h1 class="text-xl font-semibold tracking-tight">Log integrasi</h1>
+            <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">Log integrasi</h1>
             <p class="text-sm text-muted-foreground">
                 Setiap panggilan dari dan ke sistem vendor. Log tidak dapat diubah atau dihapus.
             </p>
         </div>
 
-        <section v-if="outbound.waiting > 0 || outbound.dead.length > 0" class="space-y-3 rounded-lg border p-4">
+        <section v-if="outbound.waiting > 0 || outbound.dead.length > 0" class="space-y-3 panel p-4">
             <h2 class="font-medium">Callback ke vendor</h2>
             <p class="text-sm text-muted-foreground">
                 {{ outbound.waiting }} menunggu dikirim atau dicoba ulang, {{ outbound.dead.length }} gagal total.

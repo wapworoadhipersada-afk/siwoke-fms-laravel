@@ -103,10 +103,10 @@ function formatDate(iso: string | null): string {
 <template>
     <Head :title="ticket.ticket_no" />
 
-    <div class="flex flex-1 flex-col gap-6 p-4">
+    <div class="flex flex-1 flex-col gap-6">
         <div>
             <h1
-                class="flex flex-wrap items-center gap-3 font-mono text-xl font-semibold tracking-tight"
+                class="flex flex-wrap items-center gap-3 font-mono text-xl font-semibold text-gray-800 dark:text-white/90"
             >
                 {{ ticket.ticket_no }}
                 <Badge>{{ ticket.status_label }}</Badge>
@@ -270,7 +270,7 @@ function formatDate(iso: string | null): string {
             <p v-if="visits.length === 0" class="text-sm text-muted-foreground">
                 Belum ada kunjungan.
             </p>
-            <div v-else class="overflow-x-auto rounded-lg border">
+            <div v-else class="overflow-x-auto panel">
                 <table class="w-full text-left text-sm">
                     <thead class="bg-muted/50 text-xs text-muted-foreground uppercase">
                         <tr>
@@ -307,7 +307,7 @@ function formatDate(iso: string | null): string {
 
         <section v-if="assetLines.length > 0" class="space-y-3">
             <h2 class="text-lg font-medium">Aset pada kunjungan</h2>
-            <div class="overflow-x-auto rounded-lg border">
+            <div class="overflow-x-auto panel">
                 <table class="w-full text-left text-sm">
                     <thead class="bg-muted/50 text-xs text-muted-foreground uppercase">
                         <tr>
@@ -339,7 +339,7 @@ function formatDate(iso: string | null): string {
 
         <section v-if="beritaAcara.length > 0 ||(can.generate_ba && reportableVisits.length > 0)" class="space-y-3">
             <h2 class="text-lg font-medium">Berita Acara</h2>
-            <ul v-if="beritaAcara.length > 0" class="divide-y rounded-lg border text-sm">
+            <ul v-if="beritaAcara.length > 0" class="divide-y panel text-sm">
                 <li v-for="report in beritaAcara" :key="report.ulid" class="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
                     <div>
                         <p class="font-medium">
@@ -375,7 +375,7 @@ function formatDate(iso: string | null): string {
             <div v-for="[visitNo, files] in evidenceByVisit" :key="visitNo" class="space-y-2">
                 <h3 class="text-sm font-medium text-muted-foreground">Kunjungan {{ visitNo }}</h3>
                 <ul class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-                    <li v-for="file in files" :key="file.url" class="overflow-hidden rounded-lg border">
+                    <li v-for="file in files" :key="file.url" class="overflow-hidden panel">
                         <a :href="file.url" target="_blank" rel="noopener noreferrer" class="block bg-muted/30">
                             <img :src="file.thumbnail_url" :alt="file.kind_label" loading="lazy" class="aspect-[4/3] w-full object-contain" />
                         </a>
@@ -394,7 +394,7 @@ function formatDate(iso: string | null): string {
                 <li
                     v-for="(entry, index) in timeline"
                     :key="index"
-                    class="rounded-lg border p-4"
+                    class="panel p-4"
                 >
                     <div class="flex flex-wrap items-center justify-between gap-2">
                         <p class="font-medium">
@@ -424,7 +424,7 @@ function formatDate(iso: string | null): string {
 
         <section v-if="assignments.length > 0" class="space-y-3">
             <h2 class="text-lg font-medium">Riwayat penugasan</h2>
-            <ul class="divide-y rounded-lg border text-sm">
+            <ul class="divide-y panel text-sm">
                 <li v-for="(assignment, index) in assignments" :key="index" class="px-4 py-3">
                     <span class="font-medium">{{ assignment.technician }}</span>
                     ditugaskan oleh {{ assignment.assigned_by }} pada

@@ -33,7 +33,11 @@ final class SecurityHeaders
         $headers->set('X-Frame-Options', 'DENY');
         $headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self), payment=(), usb=()');
-        $headers->set('Cross-Origin-Opener-Policy', 'same-origin');
+
+        // Browsers ignore this (and log a warning) on plain http, so it is only sent where it can work.
+        if ($request->isSecure()) {
+            $headers->set('Cross-Origin-Opener-Policy', 'same-origin');
+        }
 
         $hsts = (int) config('security.hsts_seconds');
 

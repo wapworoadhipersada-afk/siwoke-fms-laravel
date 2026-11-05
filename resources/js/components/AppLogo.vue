@@ -7,13 +7,13 @@ const name = usePage().props.name;
 
 <template>
     <div
-        class="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground"
+        class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-500 text-white"
     >
-        <AppLogoIcon class="size-5 fill-current text-white dark:text-black" />
+        <AppLogoIcon class="size-6 fill-current text-white" />
     </div>
-    <div class="ml-1 grid flex-1 text-left text-sm">
-        <span class="mb-0.5 truncate leading-tight font-semibold">{{
-            name
-        }}</span>
-    </div>
+    <span
+        class="truncate text-lg font-semibold tracking-tight text-gray-800 group-data-[collapsible=icon]:hidden dark:text-white/90"
+    >
+        {{ name }}
+    </span>
 </template>

@@ -48,9 +48,9 @@ const vendorOptions = computed(() =>
 <template>
     <Head title="TID" />
 
-    <div class="flex flex-1 flex-col gap-6 p-4">
+    <div class="flex flex-1 flex-col gap-6">
         <div>
-            <h1 class="text-xl font-semibold tracking-tight">TID</h1>
+            <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">TID</h1>
             <p class="text-sm text-muted-foreground">
                 Terminal ID per vendor. Untuk mendaftarkan TID baru, buka
                 merchant lalu pilih site-nya.

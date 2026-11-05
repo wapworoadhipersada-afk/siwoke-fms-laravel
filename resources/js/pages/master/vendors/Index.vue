@@ -30,10 +30,10 @@ const filters = useListFilters(VendorController.index.url(), {
 <template>
     <Head title="Vendor" />
 
-    <div class="flex flex-1 flex-col gap-6 p-4">
+    <div class="flex flex-1 flex-col gap-6">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
-                <h1 class="text-xl font-semibold tracking-tight">Vendor</h1>
+                <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">Vendor</h1>
                 <p class="text-sm text-muted-foreground">
                     Bank atau pemberi kerja. Setiap merchant, TID, dan aset
                     dimiliki satu vendor.

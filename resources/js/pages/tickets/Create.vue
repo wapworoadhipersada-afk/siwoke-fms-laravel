@@ -39,9 +39,9 @@ const typeOptions = computed(() =>
 <template>
     <Head title="Buat tiket" />
 
-    <div class="flex flex-1 flex-col gap-6 p-4">
+    <div class="flex flex-1 flex-col gap-6">
         <div>
-            <h1 class="text-xl font-semibold tracking-tight">Buat tiket</h1>
+            <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">Buat tiket</h1>
             <p class="text-sm text-muted-foreground">
                 Untuk tiket yang tidak datang lewat API vendor. Vendor, merchant,
                 dan lokasi diambil dari TID.
