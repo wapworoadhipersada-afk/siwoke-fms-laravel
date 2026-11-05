@@ -1,0 +1,132 @@
+# Development overlay: combine with the existing docker-compose.yml.
+# Run with:
+# docker compose -f docker-compose.yml -f docker-compose.full.yml up -d --build
+
+services:
+  redis:
+    environment:
+      REDIS_PASSWORD: \${REDIS_PASSWORD:-secret}
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$\{REDIS_PASSWORD}\" ping | grep -q PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: php artisan serve --host=0.0.0.0 --port=8000
+    env_file:
+      - .env
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8000
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: fms
+      DB_USERNAME: fms
+      DB_PASSWORD: \${DB_PASSWORD:-secret}
+      REDIS_CLIENT: phpredis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: \${REDIS_PASSWORD:-secret}
+      CACHE_STORE: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+      MAIL_MAILER: smtp
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: php artisan queue:work --sleep=1 --tries=1 --timeout=120
+    env_file:
+      - .env
+    environment:
+      APP_ENV: local
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: fms
+      DB_USERNAME: fms
+      DB_PASSWORD: \${DB_PASSWORD:-secret}
+      REDIS_CLIENT: phpredis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: \${REDIS_PASSWORD:-secret}
+      CACHE_STORE: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: php artisan schedule:work
+    env_file:
+      - .env
+    environment:
+      APP_ENV: local
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: fms
+      DB_USERNAME: fms
+      DB_PASSWORD: \${DB_PASSWORD:-secret}
+      REDIS_CLIENT: phpredis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: \${REDIS_PASSWORD:-secret}
+      CACHE_STORE: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  vite:
+    image: node:22-alpine
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: sh -lc "npm install && npm run dev -- --host 0.0.0.0"
+    volumes:
+      - .:/var/www/html
+      - node_modules:/var/www/html/node_modules
+    ports:
+      - "127.0.0.1:5173:5173"
+    depends_on:
+      - app
+
+volumes:
+  node_modules:
