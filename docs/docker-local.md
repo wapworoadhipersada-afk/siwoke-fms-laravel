@@ -11,8 +11,10 @@ The original docker-compose.yml provides PostgreSQL 17, Redis 7 and Mailpit. The
 
 ## First run (PowerShell)
 
+Create .env only if it does not already exist:
+
 \`\`\`powershell
-Copy-Item .env.example .env
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 \`\`\`
 
 Edit .env and ensure these values are set:
@@ -41,26 +43,38 @@ MAIL_PORT=1025
 
 The Compose overlay passes the service DNS names postgres, redis and mailpit to Laravel. Do not use 127.0.0.1 as DB_HOST or REDIS_HOST from inside the app container.
 
-Build and start all services:
+Validate and build the images:
 
 \`\`\`powershell
-docker compose -f docker-compose.yml -f docker-compose.full.yml up -d --build
+docker compose -f docker-compose.yml -f docker-compose.full.yml config
+docker compose -f docker-compose.yml -f docker-compose.full.yml build
 \`\`\`
 
-Install PHP dependencies inside the app container (the repository is bind-mounted, so vendor is created in the project folder):
+Install PHP dependencies in a one-off container before starting the app services. The repository is bind-mounted, so vendor is created in the project folder:
 
 \`\`\`powershell
-docker compose -f docker-compose.yml -f docker-compose.full.yml exec app composer install
+docker compose -f docker-compose.yml -f docker-compose.full.yml run --rm --no-deps app composer install
 \`\`\`
 
-Generate the app key and migrate:
+Generate the local application key:
 
 \`\`\`powershell
-docker compose -f docker-compose.yml -f docker-compose.full.yml exec app php artisan key:generate
+docker compose -f docker-compose.yml -f docker-compose.full.yml run --rm --no-deps app php artisan key:generate
+\`\`\`
+
+Start all services:
+
+\`\`\`powershell
+docker compose -f docker-compose.yml -f docker-compose.full.yml up -d
+\`\`\`
+
+Run database migrations:
+
+\`\`\`powershell
 docker compose -f docker-compose.yml -f docker-compose.full.yml exec app php artisan migrate
 \`\`\`
 
-Open:
+The Vite container installs the npm dependencies on its first start. Open:
 - Laravel: http://localhost:8000
 - Vite: http://localhost:5173
 - Mailpit: http://localhost:8025
