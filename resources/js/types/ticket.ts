@@ -75,6 +75,21 @@ export type VisitEntry = {
     distance_m: number | null;
 };
 
+export type AttachmentEntry = {
+    visit_no: number;
+    kind: string;
+    kind_label: string;
+    uploader: string;
+    captured_at: string | null;
+    uploaded_at: string | null;
+    width: number | null;
+    height: number | null;
+    latitude: string | null;
+    longitude: string | null;
+    url: string;
+    thumbnail_url: string;
+};
+
 export type AssignmentEntry = {
     technician: string;
     assigned_by: string;

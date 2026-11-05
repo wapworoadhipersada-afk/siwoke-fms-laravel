@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Modules\Document\Domain\Models\Attachment;
 use Modules\IAM\Domain\Enums\UserType;
 use Modules\IAM\Domain\Permissions;
 use Modules\Master\Domain\Models\Terminal;
@@ -162,6 +163,14 @@ final class TicketController extends ModuleController
         $visits = TicketVisit::query()->where('ticket_id', $ticket->id)->with(['technician', 'reasonCode'])->orderBy('visit_no')->get();
         $assignments = TicketAssignment::query()->where('ticket_id', $ticket->id)->with(['technician', 'assigner'])->orderBy('id')->get();
 
+        $visitNumbers = $visits->pluck('visit_no', 'id');
+        $files = Attachment::query()
+            ->where('attachable_type', 'ticket_visit')
+            ->whereIn('attachable_id', $visits->pluck('id'))
+            ->with('uploader')
+            ->orderBy('id')
+            ->get();
+
         $canAssign = $user->can(Permissions::TICKET_ASSIGN) && in_array($status, [TicketStatus::Received, TicketStatus::Pending, TicketStatus::Assigned, TicketStatus::Accepted], true);
 
         return Inertia::render('tickets/Show', [
@@ -215,6 +224,20 @@ final class TicketController extends ModuleController
                 'reason' => $visit->reasonCode?->name,
                 'notes' => $visit->notes,
                 'distance_m' => $visit->arrival_distance_m,
+            ])->values()->all(),
+            'attachments' => $files->map(fn (Attachment $file): array => [
+                'visit_no' => (int) ($visitNumbers[$file->attachable_id] ?? 0),
+                'kind' => $file->kind->value,
+                'kind_label' => $file->kind->label(),
+                'uploader' => $file->uploader->name,
+                'captured_at' => $file->captured_at?->toIso8601String(),
+                'uploaded_at' => $file->created_at?->toIso8601String(),
+                'width' => $file->width,
+                'height' => $file->height,
+                'latitude' => $file->latitude,
+                'longitude' => $file->longitude,
+                'url' => route('attachments.show', $file, false),
+                'thumbnail_url' => route('attachments.thumbnail', $file, false),
             ])->values()->all(),
             'assignments' => $assignments->map(fn (TicketAssignment $assignment): array => [
                 'technician' => $assignment->technician->name,

@@ -20,6 +20,7 @@ import { Label } from '@/components/ui/label';
 import type { UlidOption } from '@/types/master';
 import type {
     AssignmentEntry,
+    AttachmentEntry,
     TicketDetail,
     TimelineEntry,
     VisitEntry,
@@ -30,6 +31,7 @@ const props = defineProps<{
     timeline: TimelineEntry[];
     visits: VisitEntry[];
     assignments: AssignmentEntry[];
+    attachments: AttachmentEntry[];
     technicians: UlidOption[];
     can: { assign: boolean; unassign: boolean; cancel: boolean; reopen: boolean };
 }>();
@@ -54,6 +56,17 @@ const hasActions = computed(
         props.can.cancel ||
         props.can.reopen,
 );
+
+// Evidence grouped by visit, so a rescheduled ticket shows each attempt's photos on their own.
+const evidenceByVisit = computed(() => {
+    const groups = new Map<number, AttachmentEntry[]>();
+
+    for (const file of props.attachments) {
+        groups.set(file.visit_no, [...(groups.get(file.visit_no) ?? []), file]);
+    }
+
+    return [...groups.entries()].sort(([a], [b]) => a - b);
+});
 
 const mapUrl = computed(() =>
     props.ticket.site.latitude && props.ticket.site.longitude
@@ -273,6 +286,24 @@ function formatDate(iso: string | null): string {
                         </tr>
                     </tbody>
                 </table>
+            </div>
+        </section>
+
+        <section v-if="attachments.length > 0" class="space-y-4">
+            <h2 class="text-lg font-medium">Bukti</h2>
+            <div v-for="[visitNo, files] in evidenceByVisit" :key="visitNo" class="space-y-2">
+                <h3 class="text-sm font-medium text-muted-foreground">Kunjungan {{ visitNo }}</h3>
+                <ul class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                    <li v-for="file in files" :key="file.url" class="overflow-hidden rounded-lg border">
+                        <a :href="file.url" target="_blank" rel="noopener noreferrer" class="block bg-muted/30">
+                            <img :src="file.thumbnail_url" :alt="file.kind_label" loading="lazy" class="aspect-[4/3] w-full object-contain" />
+                        </a>
+                        <div class="space-y-0.5 p-2 text-xs">
+                            <p class="font-medium">{{ file.kind_label }}</p>
+                            <p class="text-muted-foreground">{{ formatDate(file.captured_at ?? file.uploaded_at) }} · {{ file.uploader }}</p>
+                        </div>
+                    </li>
+                </ul>
             </div>
         </section>
 

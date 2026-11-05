@@ -7,6 +7,7 @@ use Modules\Asset\Database\Seeders\AssetCatalogSeeder;
 use Modules\IAM\Database\Seeders\DevUserSeeder;
 use Modules\IAM\Database\Seeders\RolesAndPermissionsSeeder;
 use Modules\Ticket\Database\Seeders\TicketCatalogSeeder;
+use Modules\Ticket\Database\Seeders\TicketEvidenceRulesSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -18,6 +19,7 @@ class DatabaseSeeder extends Seeder
         $this->call(RolesAndPermissionsSeeder::class);
         $this->call(AssetCatalogSeeder::class);
         $this->call(TicketCatalogSeeder::class);
+        $this->call(TicketEvidenceRulesSeeder::class);
         $this->call(DevUserSeeder::class);
     }
 }

@@ -21,3 +21,7 @@ arch('shared kernel does not depend on any feature module')
 arch('modules do not reach into the web layer of other modules')
     ->expect(['Modules\Master\Application', 'Modules\Master\Domain'])
     ->not->toUse(['Modules\IAM\Http', 'Modules\Master\Http']);
+
+arch('the document module knows only the shared kernel, never what it documents')
+    ->expect('Modules\Document')
+    ->not->toUse(['Modules\Ticket', 'Modules\Asset', 'Modules\Master', 'Modules\Integration', 'Modules\IAM\Http']);

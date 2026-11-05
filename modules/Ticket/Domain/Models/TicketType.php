@@ -16,11 +16,12 @@ use Modules\Shared\Domain\Concerns\HasPublicUlid;
  * @property string $name
  * @property int $sla_hours
  * @property array<string, mixed> $form_schema
+ * @property array<string, mixed> $evidence_rules
  * @property bool $is_active
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['code', 'name', 'sla_hours', 'form_schema', 'is_active'])]
+#[Fillable(['code', 'name', 'sla_hours', 'form_schema', 'evidence_rules', 'is_active'])]
 class TicketType extends Model
 {
     use HasPublicUlid;
@@ -37,6 +38,7 @@ class TicketType extends Model
     {
         return [
             'form_schema' => 'array',
+            'evidence_rules' => 'array',
             'is_active' => 'boolean',
             'sla_hours' => 'integer',
         ];

@@ -9,6 +9,10 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Modules\Document\Domain\Concerns\InteractsWithAttachments;
+use Modules\Document\Domain\Contracts\HasAttachments;
+use Modules\IAM\Domain\Permissions;
+use Modules\Ticket\Domain\Enums\TicketStatus;
 use Modules\Ticket\Domain\Enums\VisitOutcome;
 
 /**
@@ -38,8 +42,38 @@ use Modules\Ticket\Domain\Enums\VisitOutcome;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['ticket_id', 'visit_no', 'technician_id', 'scheduled_at'])]
-class TicketVisit extends Model
+class TicketVisit extends Model implements HasAttachments
 {
+    use InteractsWithAttachments;
+
+    /**
+     * The technician of an open visit may add evidence from the moment they accept until they close it.
+     * A user with the close-override permission may do it for them, like any other action on their behalf.
+     */
+    public function canAttachFiles(User $user): bool
+    {
+        if (! $this->isOpen()) {
+            return false;
+        }
+
+        $status = $this->ticket->status;
+
+        if (! in_array($status, [TicketStatus::Accepted, TicketStatus::OnTheWay, TicketStatus::Arrived, TicketStatus::Handling], true)) {
+            return false;
+        }
+
+        return $this->technician_id === $user->id || $user->can(Permissions::TICKET_CLOSE_OVERRIDE);
+    }
+
+    /**
+     * Anyone who may see the ticket may see its evidence.
+     */
+    public function canViewAttachments(User $user): bool
+    {
+        return $user->can(Permissions::TICKET_VIEW)
+            && Ticket::query()->visibleTo($user)->whereKey($this->ticket_id)->exists();
+    }
+
     public function isOpen(): bool
     {
         return $this->outcome === null;

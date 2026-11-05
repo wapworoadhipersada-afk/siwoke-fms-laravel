@@ -21,6 +21,7 @@ use Modules\Ticket\Application\Actions\DepartForTicket;
 use Modules\Ticket\Application\Actions\RejectTicket;
 use Modules\Ticket\Application\Actions\StartHandling;
 use Modules\Ticket\Application\DTOs\ActionContext;
+use Modules\Ticket\Application\Services\EvidenceRules;
 use Modules\Ticket\Application\Services\TechnicianActions;
 use Modules\Ticket\Domain\Enums\ReasonType;
 use Modules\Ticket\Domain\Enums\TicketStatus;
@@ -37,6 +38,8 @@ use Modules\Ticket\Http\Api\V1\Requests\TechnicianActionRequest;
  */
 final class TicketController extends Controller
 {
+    public function __construct(private readonly EvidenceRules $evidence) {}
+
     /**
      * My jobs. `scope=active` (default) is what I am responsible for now; `scope=history` is what I finished or paused.
      */
@@ -239,6 +242,8 @@ final class TicketController extends Controller
             // Only while it is mine and still open; a closed ticket offers nothing.
             'actions' => $ticket->technician_id === $user->id ? TechnicianActions::for($ticket->status) : [],
             'reason_types' => [ReasonType::Pending->value, ReasonType::Negative->value],
+            // What each result needs attached before it is accepted, and how much is already there.
+            'evidence' => $visit instanceof TicketVisit && $visit->isOpen() ? $this->evidence->summary($ticket, $visit) : null,
         ];
     }
 }

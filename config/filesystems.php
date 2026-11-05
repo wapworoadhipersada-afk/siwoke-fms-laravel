@@ -38,6 +38,16 @@ return [
             'report' => false,
         ],
 
+        // Evidence photos and signatures. Never reachable by URL: only through a controller that checks access.
+        'attachments' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/attachments'),
+            'visibility' => 'private',
+            'serve' => false,
+            'throw' => true,
+            'report' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
