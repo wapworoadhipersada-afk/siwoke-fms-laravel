@@ -248,7 +248,7 @@ describe('the editor', function () {
 
         $labels = collect($this->service->forUser($this->admin))->flatMap(fn (array $section) => $section['items'])->firstWhere('key', 'master');
 
-        expect(array_column($labels['children'], 'label'))->toBe(['Vendor', 'Lokasi', 'Merchant', 'TID', 'Tiket']);
+        expect(array_column($labels['children'], 'label'))->toBe(['Vendor', 'Merchant', 'TID', 'Dokumen', 'Tiket']);
     });
 
     it('changes the heading of a group and carries its pages with it', function () {
