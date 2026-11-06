@@ -1,16 +1,19 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import UserController from '@/actions/Modules/IAM/Http/Web/Controllers/UserController';
 import { Button } from '@/components/ui/button';
 
 defineProps<{
     account: { name: string; email: string };
     password: string | null;
     reset: boolean;
+    sectionTitle: string;
+    sectionHref: string;
+    coverageHref: string | null;
 }>();
 
 defineOptions({
-    layout: { breadcrumbs: [{ title: 'Pengguna', href: UserController.index() }] },
+    // The section (Pengguna or Engineer / Teknisi) is named by the server; the layout adds it to the trail.
+    layout: { breadcrumbs: [] },
 });
 </script>
 
@@ -20,15 +23,15 @@ defineOptions({
     <div class="flex flex-1 flex-col gap-6 p-4">
         <div>
             <h1 class="text-xl font-semibold text-foreground">
-                {{ reset ? 'Password baru dibuat' : 'Pengguna dibuat' }}
+                {{ reset ? 'Password baru dibuat' : 'Akun dibuat' }}
             </h1>
             <p class="text-sm text-muted-foreground">
                 Password sementara hanya tampil di halaman ini. Berikan kepada pemiliknya lewat jalur aman dan minta ia
-                menggantinya setelah masuk. Jika hilang, buat ulang dari halaman ubah pengguna.
+                menggantinya setelah masuk. Jika hilang, buat ulang dari halaman ubah.
             </p>
         </div>
 
-        <dl class="rounded-xl border bg-card max-w-2xl space-y-4 p-5 text-sm">
+        <dl class="max-w-2xl space-y-4 rounded-xl border bg-card p-5 text-sm">
             <div>
                 <dt class="text-muted-foreground">Akun</dt>
                 <dd class="font-medium">{{ account.name }} ({{ account.email }})</dd>
@@ -39,9 +42,12 @@ defineOptions({
             </div>
         </dl>
 
-        <div>
-            <Button as-child>
-                <Link :href="UserController.index()">Sudah saya simpan</Link>
+        <div class="flex flex-wrap gap-2">
+            <Button v-if="coverageHref" as-child>
+                <Link :href="coverageHref">Atur area dan vendor</Link>
+            </Button>
+            <Button :variant="coverageHref ? 'outline' : 'default'" as-child>
+                <Link :href="sectionHref">Sudah saya simpan</Link>
             </Button>
         </div>
     </div>

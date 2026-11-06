@@ -95,11 +95,11 @@ describe('who sees what', function () {
         $labels = labelsFor(userWith(RoleName::Coordinator));
 
         expect($labels)->toContain('Tiket')->toContain('Aset')->toContain('Vendor')
-            ->not->toContain('Peran')->not->toContain('Klien integrasi')->not->toContain('Pengaturan menu');
+            ->not->toContain('Pengaturan')->not->toContain('Klien integrasi');
     });
 
     it('shows Super Admin everything, including the access settings', function () {
-        expect(labelsFor($this->admin))->toContain('Peran')->toContain('Pengaturan menu')->toContain('Pengguna')->toContain('Klien integrasi');
+        expect(labelsFor($this->admin))->toContain('Pengaturan')->toContain('Pengguna')->toContain('Klien integrasi');
     });
 
     it('shows a technician almost nothing of the office menu', function () {
@@ -278,15 +278,18 @@ describe('the screens', function () {
     it('show the editor with the settings of the chosen role', function () {
         $role = Role::findByName(RoleName::Coordinator->value);
 
-        $this->actingAs($this->admin)->get(route('iam.navigation.index', ['role' => $role->id]))->assertOk()
-            ->assertInertia(fn ($page) => $page->component('iam/navigation/Index')->where('selectedRole', $role->id)->has('settings')->has('preview')->has('menus')->has('icons'));
+        $this->actingAs($this->admin)->get(route('iam.navigation.access', ['role' => $role->id]))->assertOk()
+            ->assertInertia(fn ($page) => $page->component('iam/navigation/Access')->where('selectedRole', $role->id)->has('settings')->has('preview'));
+
+        $this->get(route('iam.navigation.index'))->assertOk()
+            ->assertInertia(fn ($page) => $page->component('iam/navigation/Index')->has('menus')->has('icons')->has('pages')->has('sections'));
     });
 
     it('save a role\'s menu from the form', function () {
         $role = Role::findByName(RoleName::Coordinator->value);
 
         $this->actingAs($this->admin)->put(route('iam.navigation.role', $role), ['items' => [['menu_id' => menu('tickets')->id, 'is_visible' => false, 'sort_order' => 20]]])
-            ->assertRedirect(route('iam.navigation.index', ['role' => $role->id]));
+            ->assertRedirect(route('iam.navigation.access', ['role' => $role->id]));
 
         expect(labelsFor(userWith(RoleName::Coordinator)))->not->toContain('Tiket');
     });

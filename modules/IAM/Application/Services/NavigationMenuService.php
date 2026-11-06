@@ -147,7 +147,7 @@ final class NavigationMenuService
     /**
      * A new installation has an empty table; fill it from the catalog so the sidebar is never blank.
      */
-    private function ensureCatalog(): void
+    public function ensureCatalog(): void
     {
         if (! NavigationMenu::query()->exists()) {
             app(SyncNavigationCatalog::class)->handle();

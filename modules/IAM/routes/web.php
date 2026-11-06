@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
+use Modules\IAM\Http\Web\Controllers\EngineerController;
 use Modules\IAM\Http\Web\Controllers\NavigationController;
 use Modules\IAM\Http\Web\Controllers\RoleController;
+use Modules\IAM\Http\Web\Controllers\SettingsController;
 use Modules\IAM\Http\Web\Controllers\UserController;
 use Modules\IAM\Http\Web\Controllers\UserPhotoController;
 
@@ -18,6 +20,10 @@ Route::middleware(['web', 'auth', 'verified'])->prefix('iam')->name('iam.')->gro
 
     Route::get('users', [UserController::class, 'index'])->name('users.index');
     Route::get('engineers', [UserController::class, 'engineers'])->name('engineers.index');
+    Route::get('engineers/create', [EngineerController::class, 'create'])->name('engineers.create');
+    Route::post('engineers', [EngineerController::class, 'store'])->name('engineers.store');
+    Route::get('engineers/{managedUser}/edit', [EngineerController::class, 'edit'])->name('engineers.edit');
+    Route::put('engineers/{managedUser}', [EngineerController::class, 'update'])->name('engineers.update');
     Route::get('users/create', [UserController::class, 'create'])->name('users.create');
     Route::post('users', [UserController::class, 'store'])->name('users.store');
     Route::get('users/{managedUser}/edit', [UserController::class, 'edit'])->name('users.edit');
@@ -27,7 +33,12 @@ Route::middleware(['web', 'auth', 'verified'])->prefix('iam')->name('iam.')->gro
     Route::delete('users/{managedUser}/photo', [UserPhotoController::class, 'destroy'])->name('users.photo.destroy');
     Route::post('users/{managedUser}/reset-password', [UserController::class, 'resetPassword'])->middleware('throttle:10,1')->name('users.reset-password');
 
+    Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::get('navigation', [NavigationController::class, 'index'])->name('navigation.index');
+    Route::get('navigation/access', [NavigationController::class, 'access'])->name('navigation.access');
+    Route::post('navigation/groups', [NavigationController::class, 'storeGroup'])->name('navigation.groups.store');
+    Route::post('navigation/menus', [NavigationController::class, 'storeMenu'])->name('navigation.menus.store');
+    Route::delete('navigation/menus/{menu}', [NavigationController::class, 'destroy'])->whereNumber('menu')->name('navigation.destroy');
     Route::post('navigation/sync', [NavigationController::class, 'sync'])->name('navigation.sync');
     Route::put('navigation/roles/{role}', [NavigationController::class, 'syncRole'])->whereNumber('role')->name('navigation.role');
     Route::put('navigation/menus/{menu}', [NavigationController::class, 'update'])->whereNumber('menu')->name('navigation.update');

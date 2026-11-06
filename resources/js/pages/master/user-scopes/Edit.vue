@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import UserController from '@/actions/Modules/IAM/Http/Web/Controllers/UserController';
 import UserScopeController from '@/actions/Modules/Master/Http/Web/Controllers/UserScopeController';
 import { Button } from '@/components/ui/button';
 
 const props = defineProps<{
+    sectionTitle: string;
+    sectionHref: string;
+    backHref: string;
     managed: {
         ulid: string;
         name: string;
@@ -28,9 +30,7 @@ const props = defineProps<{
 }>();
 
 defineOptions({
-    layout: {
-        breadcrumbs: [{ title: 'Pengguna', href: UserController.index() }],
-    },
+    layout: { breadcrumbs: [] },
 });
 
 const chosenAreas = ref<Set<number>>(new Set(props.assigned));
@@ -199,7 +199,7 @@ const areaCount = computed(
             <div class="flex gap-2 lg:col-span-2">
                 <Button type="submit" :disabled="processing">Simpan cakupan</Button>
                 <Button variant="outline" as-child>
-                    <Link :href="UserController.edit(managed.ulid)">Kembali</Link>
+                    <Link :href="backHref">Kembali</Link>
                 </Button>
             </div>
         </Form>

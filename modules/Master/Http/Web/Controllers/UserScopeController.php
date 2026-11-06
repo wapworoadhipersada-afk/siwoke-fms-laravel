@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Modules\IAM\Domain\FieldAccount;
 use Modules\IAM\Domain\Permissions;
 use Modules\Master\Application\Actions\SyncUserLocationScopes;
 use Modules\Master\Application\Actions\SyncUserVendors;
@@ -28,7 +29,12 @@ final class UserScopeController extends MasterController
     {
         $this->allow(Permissions::IAM_USER_UPDATE);
 
+        $field = FieldAccount::is($managedUser);
+
         return Inertia::render('master/user-scopes/Edit', [
+            'sectionTitle' => $field ? 'Engineer / Teknisi' : 'Pengguna',
+            'sectionHref' => route($field ? 'iam.engineers.index' : 'iam.users.index', absolute: false),
+            'backHref' => route($field ? 'iam.engineers.edit' : 'iam.users.edit', $managedUser->ulid, absolute: false),
             'managed' => [
                 'ulid' => $managedUser->ulid,
                 'name' => $managedUser->name,

@@ -65,7 +65,9 @@ const trail = computed((): BreadcrumbItem[] => {
     const section = page.props.sectionTitle;
 
     if (props.breadcrumbs.length === 0 && typeof section === 'string') {
-        items.push({ title: section, href: page.url.split('?')[0] });
+        const href = page.props.sectionHref;
+
+        items.push({ title: section, href: typeof href === 'string' ? href : page.url.split('?')[0] });
     }
 
     if (currentPageLabel.value !== null) {

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Modules\IAM\Application\Services\NavigationCatalog;
 use Modules\IAM\Application\Services\NavigationMenuService;
+use Modules\IAM\Application\Services\NavigationUrl;
 use Modules\IAM\Domain\Models\NavigationMenu;
 
 /**
@@ -20,7 +21,7 @@ final class UpdateNavigationMenu
     public function __construct(private readonly NavigationMenuService $menus) {}
 
     /**
-     * @param  array{label: string, icon: string|null, section: string, is_active: bool, parent_id: int|null}  $data
+     * @param  array{label: string, icon: string|null, section: string, is_active: bool, parent_id: int|null, url?: string|null}  $data
      */
     public function handle(NavigationMenu $menu, array $data, User $actor): NavigationMenu
     {
@@ -34,8 +35,19 @@ final class UpdateNavigationMenu
             $parent = NavigationMenu::query()->find($parentId);
 
             // Only a group can hold entries, and a group cannot be put inside another one.
-            if (! $parent instanceof NavigationMenu || $parent->route_name !== null || $parent->id === $menu->id || $menu->route_name === null) {
+            if (! $parent instanceof NavigationMenu || ! $parent->isGroup() || $parent->id === $menu->id || $menu->isGroup()) {
                 throw ValidationException::withMessages(['parent_id' => 'Grup tujuan tidak valid.']);
+            }
+        }
+
+        // Only a menu of the administrator's own may change where it leads, and only to a safe path.
+        $url = $menu->url;
+
+        if ($menu->is_custom && $menu->url !== null && array_key_exists('url', $data)) {
+            $url = trim((string) $data['url']);
+
+            if (! NavigationUrl::isSafe($url)) {
+                throw ValidationException::withMessages(['url' => 'Alamat harus berupa path di aplikasi ini, misalnya /tickets (diawali satu garis miring).']);
             }
         }
 
@@ -43,8 +55,9 @@ final class UpdateNavigationMenu
         $moved = $parentId !== $menu->parent_id;
         $before = $menu->only(['label', 'icon', 'section', 'is_active', 'parent_id', 'sort_order']);
 
-        DB::transaction(function () use ($menu, $data, $parentId, $moved): void {
+        DB::transaction(function () use ($menu, $data, $parentId, $moved, $url): void {
             $menu->forceFill([
+                'url' => $url,
                 'label' => trim($data['label']),
                 'icon' => $data['icon'],
                 'section' => $parentId === null ? trim($data['section']) : $menu->section,
@@ -64,7 +77,7 @@ final class UpdateNavigationMenu
             $menu->save();
 
             // A group's children follow it when it changes heading.
-            if ($menu->route_name === null) {
+            if ($menu->isGroup()) {
                 NavigationMenu::query()->where('parent_id', $menu->id)->update(['section' => $menu->section]);
             }
         });

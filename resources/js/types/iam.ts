@@ -75,6 +75,9 @@ export type MenuEntry = {
     label: string;
     icon: string | null;
     route_name: string | null;
+    url: string | null;
+    is_group: boolean;
+    is_custom: boolean;
     permission_name: string | null;
     is_active: boolean;
     sort_order: number;

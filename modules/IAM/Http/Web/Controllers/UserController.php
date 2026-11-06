@@ -9,12 +9,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Modules\IAM\Application\Actions\ResetUserPassword;
 use Modules\IAM\Application\Actions\SaveUser;
 use Modules\IAM\Domain\Enums\RoleName;
 use Modules\IAM\Domain\Enums\UserType;
+use Modules\IAM\Domain\FieldAccount;
 use Modules\IAM\Domain\Permissions;
 use Modules\Shared\Http\ModuleController;
 use Spatie\Permission\Models\Role;
@@ -42,7 +44,7 @@ final class UserController extends ModuleController
         $search = trim((string) $request->query('q'));
         $role = trim((string) $request->query('role'));
         $viewer = $this->user();
-        $fieldRoles = [RoleName::Leader->value, RoleName::Technician->value];
+        $fieldRoles = FieldAccount::roles();
 
         $users = User::query()
             ->with('roles')
@@ -92,7 +94,7 @@ final class UserController extends ModuleController
     {
         $this->allow(Permissions::IAM_USER_CREATE);
 
-        return Inertia::render('iam/users/Form', ['managed' => null, 'roles' => $this->roleOptions(), 'types' => $this->typeOptions()]);
+        return Inertia::render('iam/users/Form', ['managed' => null, 'roles' => $this->officeRoleOptions(), 'types' => $this->officeTypeOptions()]);
     }
 
     public function store(Request $request, SaveUser $action): Response
@@ -105,12 +107,20 @@ final class UserController extends ModuleController
             'account' => ['name' => $result['user']->name, 'email' => $result['user']->email],
             'password' => $result['password'],
             'reset' => false,
+            'sectionTitle' => 'Pengguna',
+            'sectionHref' => route('iam.users.index', absolute: false),
+            'coverageHref' => null,
         ]);
     }
 
-    public function edit(User $managedUser): Response
+    public function edit(User $managedUser): Response|RedirectResponse
     {
         $this->allow(Permissions::IAM_USER_UPDATE);
+
+        // Leaders and engineers are changed on their own form.
+        if (FieldAccount::is($managedUser)) {
+            return to_route('iam.engineers.edit', $managedUser->ulid);
+        }
 
         return Inertia::render('iam/users/Form', [
             'managed' => [
@@ -127,8 +137,8 @@ final class UserController extends ModuleController
                 'roles' => $managedUser->roles()->pluck('name')->values()->all(),
                 'is_self' => $managedUser->is($this->user()),
             ],
-            'roles' => $this->roleOptions(),
-            'types' => $this->typeOptions(),
+            'roles' => $this->officeRoleOptions(),
+            'types' => $this->officeTypeOptions(),
         ]);
     }
 
@@ -152,6 +162,9 @@ final class UserController extends ModuleController
             'account' => ['name' => $managedUser->name, 'email' => $managedUser->email],
             'password' => $password,
             'reset' => true,
+            'sectionTitle' => FieldAccount::is($managedUser) ? 'Engineer / Teknisi' : 'Pengguna',
+            'sectionHref' => FieldAccount::is($managedUser) ? route('iam.engineers.index', absolute: false) : route('iam.users.index', absolute: false),
+            'coverageHref' => null,
         ]);
     }
 
@@ -176,7 +189,14 @@ final class UserController extends ModuleController
             'roles.*' => ['string', 'max:60'],
         ]);
 
-        return [...$data, 'is_active' => (bool) ($data['is_active'] ?? true), 'roles' => array_values($data['roles'] ?? [])];
+        $roles = array_values($data['roles'] ?? []);
+
+        // Leaders and engineers are created and changed under Engineer / Teknisi, never through this form.
+        if (array_intersect($roles, FieldAccount::roles()) !== [] || $data['user_type'] === UserType::Technician->value) {
+            throw ValidationException::withMessages(['roles' => 'Leader dan teknisi diatur lewat menu Engineer / Teknisi.']);
+        }
+
+        return [...$data, 'is_active' => (bool) ($data['is_active'] ?? true), 'roles' => $roles];
     }
 
     /**
@@ -189,6 +209,22 @@ final class UserController extends ModuleController
             'label' => (string) ($role->getAttribute('label') ?? $role->name),
             'privileged' => $role->name === RoleName::SuperAdmin->value,
         ])->values()->all();
+    }
+
+    /**
+     * @return list<array{name: string, label: string, privileged: bool}>
+     */
+    private function officeRoleOptions(): array
+    {
+        return array_values(array_filter($this->roleOptions(), static fn (array $option): bool => ! in_array($option['name'], FieldAccount::roles(), true)));
+    }
+
+    /**
+     * @return list<array{value: string, label: string}>
+     */
+    private function officeTypeOptions(): array
+    {
+        return array_values(array_filter($this->typeOptions(), static fn (array $option): bool => $option['value'] !== UserType::Technician->value));
     }
 
     /**

@@ -40,7 +40,7 @@ const filters = useListFilters(listUrl, { ...props.filters });
                 </p>
             </div>
             <Button v-if="can.create" as-child>
-                <Link :href="UserController.create()">{{ field ? 'Tambah engineer' : 'Tambah pengguna' }}</Link>
+                <Link :href="field ? '/iam/engineers/create' : UserController.create()">{{ field ? 'Tambah engineer / teknisi' : 'Tambah pengguna' }}</Link>
             </Button>
         </div>
 
@@ -77,7 +77,7 @@ const filters = useListFilters(listUrl, { ...props.filters });
                 <td class="px-5 py-4"><StatusBadge :active="user.is_active" /></td>
                 <td class="px-5 py-4 text-right whitespace-nowrap">
                     <Button v-if="can.update" variant="ghost" size="sm" as-child>
-                        <Link :href="UserController.edit(user.ulid)">Ubah</Link>
+                        <Link :href="field ? `/iam/engineers/${user.ulid}/edit` : UserController.edit(user.ulid)">Ubah</Link>
                     </Button>
                 </td>
             </tr>
