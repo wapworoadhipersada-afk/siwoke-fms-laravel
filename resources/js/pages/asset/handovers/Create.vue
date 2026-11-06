@@ -52,9 +52,9 @@ function chooseWarehouse(ulid: string): void {
 <template>
     <Head title="Serah ke teknisi" />
 
-    <div class="flex flex-1 flex-col gap-6">
+    <div class="flex flex-1 flex-col gap-6 p-4">
         <div>
-            <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">
+            <h1 class="text-xl font-semibold tracking-tight">
                 Serah ke teknisi
             </h1>
             <p class="text-sm text-muted-foreground">

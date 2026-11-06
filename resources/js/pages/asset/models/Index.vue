@@ -44,10 +44,10 @@ const categoryOptions = computed(() =>
 <template>
     <Head title="Jenis aset" />
 
-    <div class="flex flex-1 flex-col gap-6">
+    <div class="flex flex-1 flex-col gap-6 p-4">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
-                <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">
+                <h1 class="text-xl font-semibold tracking-tight">
                     Jenis aset
                 </h1>
                 <p class="text-sm text-muted-foreground">

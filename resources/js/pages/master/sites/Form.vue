@@ -42,9 +42,9 @@ const options = computed(() =>
 <template>
     <Head :title="title" />
 
-    <div class="flex flex-1 flex-col gap-6">
+    <div class="flex flex-1 flex-col gap-6 p-4">
         <div>
-            <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">{{ title }}</h1>
+            <h1 class="text-xl font-semibold tracking-tight">{{ title }}</h1>
             <p class="text-sm text-muted-foreground">
                 {{ merchant.name }} · {{ merchant.merchant_code }}
             </p>

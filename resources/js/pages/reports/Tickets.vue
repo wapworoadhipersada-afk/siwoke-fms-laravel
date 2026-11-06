@@ -40,10 +40,10 @@ const exportUrl = (): string => {
 <template>
     <Head title="Laporan tiket" />
 
-    <div class="flex flex-1 flex-col gap-6">
+    <div class="flex flex-1 flex-col gap-6 p-4">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
-                <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">Laporan tiket</h1>
+                <h1 class="text-xl font-semibold tracking-tight">Laporan tiket</h1>
                 <p class="text-sm text-muted-foreground">Hanya tiket di area Anda. Ekspor memakai filter yang sama.</p>
             </div>
             <Button v-if="can.export" as-child variant="outline">

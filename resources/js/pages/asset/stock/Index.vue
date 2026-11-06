@@ -38,9 +38,9 @@ const vendorOptions = computed(() =>
 <template>
     <Head title="Stok" />
 
-    <div class="flex flex-1 flex-col gap-6">
+    <div class="flex flex-1 flex-col gap-6 p-4">
         <div>
-            <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">Stok</h1>
+            <h1 class="text-xl font-semibold tracking-tight">Stok</h1>
             <p class="text-sm text-muted-foreground">
                 Saldo barang habis pakai (thermal paper, charger) per gudang dan
                 per teknisi, dipisah per vendor.

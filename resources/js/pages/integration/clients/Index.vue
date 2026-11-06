@@ -30,10 +30,10 @@ const formatDate =(value: string | null): string =>
 <template>
     <Head title="Klien integrasi" />
 
-    <div class="flex flex-1 flex-col gap-6">
+    <div class="flex flex-1 flex-col gap-6 p-4">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
-                <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">Klien integrasi</h1>
+                <h1 class="text-xl font-semibold tracking-tight">Klien integrasi</h1>
                 <p class="text-sm text-muted-foreground">
                     Sistem vendor yang boleh mengirim tiket ke kita dan menerima kabar status. Kunci rahasia hanya
                     ditampilkan sekali saat dibuat atau diganti.

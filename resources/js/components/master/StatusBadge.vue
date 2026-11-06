@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { Badge } from '@/components/ui/badge';
 
 const props = defineProps<{
     active?: boolean;
@@ -7,17 +8,16 @@ const props = defineProps<{
     label?: string;
 }>();
 
-// Soft pills as in TailAdmin: green for working, gray for switched off, red for removed.
-const tone = computed(() => {
+const variant = computed(() => {
     if (props.status === 'removed') {
-        return 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500';
+        return 'destructive';
     }
 
     if (props.status === 'inactive' || props.active === false) {
-        return 'bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-white/80';
+        return 'secondary';
     }
 
-    return 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500';
+    return 'default';
 });
 
 const text = computed(
@@ -26,10 +26,5 @@ const text = computed(
 </script>
 
 <template>
-    <span
-        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-theme-xs font-medium whitespace-nowrap"
-        :class="tone"
-    >
-        {{ text }}
-    </span>
+    <Badge :variant="variant">{{ text }}</Badge>
 </template>

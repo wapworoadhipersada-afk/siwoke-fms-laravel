@@ -31,10 +31,10 @@ const filters = useListFilters(WarehouseController.index.url(), {
 <template>
     <Head title="Gudang" />
 
-    <div class="flex flex-1 flex-col gap-6">
+    <div class="flex flex-1 flex-col gap-6 p-4">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
-                <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">Gudang</h1>
+                <h1 class="text-xl font-semibold tracking-tight">Gudang</h1>
                 <p class="text-sm text-muted-foreground">
                     Tempat aset disimpan sebelum diserahkan ke teknisi.
                 </p>

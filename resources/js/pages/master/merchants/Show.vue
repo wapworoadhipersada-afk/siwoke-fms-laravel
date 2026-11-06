@@ -41,10 +41,10 @@ const details: [string, string | null][] = [
 <template>
     <Head :title="merchant.name" />
 
-    <div class="flex flex-1 flex-col gap-6">
+    <div class="flex flex-1 flex-col gap-6 p-4">
         <div class="flex flex-wrap items-start justify-between gap-4">
             <div>
-                <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">
+                <h1 class="text-xl font-semibold tracking-tight">
                     {{ merchant.name }}
                 </h1>
                 <dl
@@ -81,7 +81,7 @@ const details: [string, string | null][] = [
 
         <p
             v-if="sites.length === 0"
-            class="panel border-dashed p-8 text-center text-sm text-muted-foreground"
+            class="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground"
         >
             Belum ada site. Tambahkan site terlebih dahulu agar TID dapat
             didaftarkan.

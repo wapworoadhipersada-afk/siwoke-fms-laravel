@@ -57,14 +57,14 @@ const toggleGroup = (group: PermissionGroup): void => {
 
     <div class="flex flex-1 flex-col gap-6">
         <div>
-            <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">{{ title }}</h1>
+            <h1 class="text-xl font-semibold text-foreground">{{ title }}</h1>
             <p v-if="locked" class="mt-1 text-sm text-muted-foreground">
                 Super Admin selalu boleh melakukan semuanya dan tidak dapat diubah.
             </p>
         </div>
 
         <Form v-bind="form" class="space-y-6" v-slot="{ errors, processing }">
-            <div class="panel max-w-3xl space-y-5 p-5 md:p-6">
+            <div class="rounded-xl border bg-card max-w-3xl space-y-5 p-5 md:p-6">
                 <div class="grid gap-2">
                     <Label for="label">Nama peran</Label>
                     <Input id="label" name="label" :default-value="role?.label" placeholder="Supervisor Wilayah" :disabled="locked" required />
@@ -86,13 +86,13 @@ const toggleGroup = (group: PermissionGroup): void => {
             </div>
 
             <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                <section v-for="group in groups" :key="group.key" class="panel p-5">
+                <section v-for="group in groups" :key="group.key" class="rounded-xl border bg-card p-5">
                     <div class="mb-3 flex items-center justify-between gap-2">
-                        <h2 class="font-medium text-gray-800 dark:text-white/90">{{ group.label }}</h2>
+                        <h2 class="font-medium text-foreground">{{ group.label }}</h2>
                         <button
                             v-if="!locked"
                             type="button"
-                            class="text-xs text-brand-500 hover:text-brand-600"
+                            class="text-xs text-primary hover:underline"
                             @click="toggleGroup(group)"
                         >
                             {{ allOn(group) ? 'Kosongkan' : 'Pilih semua' }}
@@ -115,14 +115,14 @@ const toggleGroup = (group: PermissionGroup): void => {
                                     :value="permission.name"
                                     :checked="locked || chosen.has(permission.name)"
                                     :disabled="!canToggle(permission)"
-                                    class="mt-0.5 size-4 rounded border-gray-300 accent-brand-500"
+                                    class="mt-0.5 size-4 rounded border-gray-300 accent-primary"
                                     @change="toggle(permission.name, ($event.target as HTMLInputElement).checked)"
                                 />
                                 <span>
                                     <span class="text-gray-700 dark:text-gray-300">{{ permission.label }}</span>
                                     <span
                                         v-if="permission.privileged"
-                                        class="ms-1 rounded-full bg-warning-50 px-1.5 py-0.5 text-[10px] font-medium text-warning-700 dark:bg-warning-500/15 dark:text-orange-400"
+                                        class="ms-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800 dark:bg-amber-500/20 dark:text-amber-300"
                                     >
                                         Super Admin saja
                                     </span>

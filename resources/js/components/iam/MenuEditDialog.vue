@@ -86,7 +86,7 @@ const selectClass = 'h-10 w-full rounded-lg border border-input bg-transparent p
 
                 <label class="flex items-center gap-2 text-sm font-medium">
                     <input type="hidden" name="is_active" value="0" />
-                    <input type="checkbox" name="is_active" value="1" :checked="menu.is_active" class="size-4 rounded border-gray-300 accent-brand-500" />
+                    <input type="checkbox" name="is_active" value="1" :checked="menu.is_active" class="size-4 rounded border-gray-300 accent-primary" />
                     Tampilkan di menu
                 </label>
 

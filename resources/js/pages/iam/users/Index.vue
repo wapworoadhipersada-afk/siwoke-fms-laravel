@@ -30,7 +30,7 @@ const filters = useListFilters(UserController.index.url(), { ...props.filters })
     <div class="flex flex-1 flex-col gap-6">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
-                <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">Pengguna</h1>
+                <h1 class="text-xl font-semibold text-foreground">Pengguna</h1>
                 <p class="text-sm text-muted-foreground">Staf kantor dan teknisi, beserta peran yang mereka pegang.</p>
             </div>
             <Button v-if="can.create" as-child>
@@ -49,7 +49,7 @@ const filters = useListFilters(UserController.index.url(), { ...props.filters })
         <DataTable :columns="['Nama', 'Jenis', 'Peran', 'Status', '']" :empty="users.data.length === 0">
             <tr v-for="user in users.data" :key="user.ulid">
                 <td class="px-5 py-4">
-                    <p class="font-medium text-gray-800 dark:text-white/90">{{ user.name }}</p>
+                    <p class="font-medium text-foreground">{{ user.name }}</p>
                     <p class="text-xs text-gray-500">{{ user.email }}<template v-if="user.employee_no"> · {{ user.employee_no }}</template></p>
                 </td>
                 <td class="px-5 py-4">{{ user.user_type_label }}</td>
@@ -57,7 +57,7 @@ const filters = useListFilters(UserController.index.url(), { ...props.filters })
                     <span
                         v-for="role in user.roles"
                         :key="role"
-                        class="me-1 inline-flex rounded-full bg-brand-50 px-2.5 py-0.5 text-theme-xs font-medium text-brand-500 dark:bg-brand-500/15 dark:text-brand-400"
+                        class="me-1 inline-flex rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-primary "
                     >
                         {{ role }}
                     </span>

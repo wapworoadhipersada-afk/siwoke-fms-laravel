@@ -37,7 +37,7 @@ const typeOptions = computed(() => props.types.map((type) => ({ value: type.valu
 
     <div class="flex flex-1 flex-col gap-6">
         <div class="flex flex-wrap items-center justify-between gap-3">
-            <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">{{ title }}</h1>
+            <h1 class="text-xl font-semibold text-foreground">{{ title }}</h1>
             <div v-if="managed" class="flex flex-wrap gap-2">
                 <Button variant="outline" as-child>
                     <Link :href="UserScopeController.edit(managed.ulid)">Atur area kerja</Link>
@@ -48,7 +48,7 @@ const typeOptions = computed(() => props.types.map((type) => ({ value: type.valu
             </div>
         </div>
 
-        <Form v-bind="form" class="panel max-w-3xl space-y-5 p-5 md:p-6" v-slot="{ errors, processing }">
+        <Form v-bind="form" class="rounded-xl border bg-card max-w-3xl space-y-5 p-5 md:p-6" v-slot="{ errors, processing }">
             <div class="grid gap-5 sm:grid-cols-2">
                 <div class="grid gap-2">
                     <Label for="name">Nama</Label>
@@ -86,7 +86,7 @@ const typeOptions = computed(() => props.types.map((type) => ({ value: type.valu
                         :value="role.name"
                         :checked="managed?.roles.includes(role.name) ?? false"
                         :disabled="managed?.is_self"
-                        class="size-4 rounded border-gray-300 accent-brand-500"
+                        class="size-4 rounded border-gray-300 accent-primary"
                     />
                     {{ role.label }}
                 </label>
@@ -106,7 +106,7 @@ const typeOptions = computed(() => props.types.map((type) => ({ value: type.valu
                     value="1"
                     :checked="managed?.is_active ?? true"
                     :disabled="managed?.is_self"
-                    class="size-4 rounded border-gray-300 accent-brand-500"
+                    class="size-4 rounded border-gray-300 accent-primary"
                 />
                 Akun aktif (boleh masuk)
             </label>

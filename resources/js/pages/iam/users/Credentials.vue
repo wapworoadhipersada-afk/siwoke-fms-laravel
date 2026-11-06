@@ -19,7 +19,7 @@ defineOptions({
 
     <div class="flex flex-1 flex-col gap-6">
         <div>
-            <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">
+            <h1 class="text-xl font-semibold text-foreground">
                 {{ reset ? 'Password baru dibuat' : 'Pengguna dibuat' }}
             </h1>
             <p class="text-sm text-muted-foreground">
@@ -28,7 +28,7 @@ defineOptions({
             </p>
         </div>
 
-        <dl class="panel max-w-2xl space-y-4 p-5 text-sm">
+        <dl class="rounded-xl border bg-card max-w-2xl space-y-4 p-5 text-sm">
             <div>
                 <dt class="text-muted-foreground">Akun</dt>
                 <dd class="font-medium">{{ account.name }} ({{ account.email }})</dd>

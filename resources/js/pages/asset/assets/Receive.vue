@@ -48,9 +48,9 @@ const warehouseOptions = computed(() =>
 <template>
     <Head title="Terima aset" />
 
-    <div class="flex flex-1 flex-col gap-6">
+    <div class="flex flex-1 flex-col gap-6 p-4">
         <div>
-            <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">Terima aset</h1>
+            <h1 class="text-xl font-semibold tracking-tight">Terima aset</h1>
             <p class="text-sm text-muted-foreground">
                 Mencatat barang yang masuk ke gudang. Setiap aset dimiliki satu
                 vendor.

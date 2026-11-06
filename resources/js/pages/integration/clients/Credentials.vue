@@ -21,16 +21,16 @@ defineOptions({
 <template>
     <Head title="Kunci rahasia klien" />
 
-    <div class="flex flex-1 flex-col gap-6">
+    <div class="flex flex-1 flex-col gap-6 p-4">
         <div>
-            <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">Simpan kunci ini sekarang</h1>
+            <h1 class="text-xl font-semibold tracking-tight">Simpan kunci ini sekarang</h1>
             <p class="text-sm text-muted-foreground">
                 Kunci rahasia hanya ditampilkan di halaman ini. Setelah Anda meninggalkannya, tidak ada yang dapat
                 melihatnya lagi, termasuk kami. Kirim lewat jalur aman ke pihak {{ client.vendor }}. Jika hilang, ganti kuncinya.
             </p>
         </div>
 
-        <dl class="max-w-2xl space-y-4 panel p-4 text-sm">
+        <dl class="max-w-2xl space-y-4 rounded-lg border p-4 text-sm">
             <div>
                 <dt class="text-muted-foreground">Klien</dt>
                 <dd class="font-medium">{{ client.name }} ({{ client.vendor }})</dd>

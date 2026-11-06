@@ -4,7 +4,7 @@ import { computed, ref, watch } from 'vue';
 import NavigationController from '@/actions/Modules/IAM/Http/Web/Controllers/NavigationController';
 import MenuEditDialog from '@/components/iam/MenuEditDialog.vue';
 import { Button } from '@/components/ui/button';
-import { ArrowDownIcon, ArrowUpIcon } from '@/icons/layout';
+import { ArrowDown as ArrowDownIcon, ArrowUp as ArrowUpIcon } from '@lucide/vue';
 import type { NavSection } from '@/types';
 import type { AuditEntry, MenuEntry, MenuSetting } from '@/types/iam';
 
@@ -118,7 +118,7 @@ const formatDate = (value: string | null): string => (value ? new Date(value).to
     <div class="flex flex-1 flex-col gap-6">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
-                <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">Pengaturan menu</h1>
+                <h1 class="text-xl font-semibold text-foreground">Pengaturan menu</h1>
                 <p class="text-sm text-muted-foreground">
                     Atur menu apa yang tampil dan urutannya untuk tiap peran. Menyembunyikan menu hanya merapikan
                     tampilan; hak akses tetap diatur di halaman Peran.
@@ -129,7 +129,7 @@ const formatDate = (value: string | null): string => (value ? new Date(value).to
             </Form>
         </div>
 
-        <section class="panel p-5 md:p-6">
+        <section class="rounded-xl border bg-card p-5 md:p-6">
             <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <div class="flex items-center gap-3">
                     <label for="role" class="text-sm font-medium text-gray-700 dark:text-gray-300">Menu untuk peran</label>
@@ -152,12 +152,12 @@ const formatDate = (value: string | null): string => (value ? new Date(value).to
                         >
                             <input
                                 type="checkbox"
-                                class="size-4 rounded border-gray-300 accent-brand-500"
+                                class="size-4 rounded border-gray-300 accent-primary"
                                 :checked="row.visible"
                                 :aria-label="`Tampilkan ${row.label}`"
                                 @change="setVisible(row.id, ($event.target as HTMLInputElement).checked)"
                             />
-                            <span class="flex-1" :class="row.depth === 0 ? 'font-medium text-gray-800 dark:text-white/90' : 'text-gray-700 dark:text-gray-300'">
+                            <span class="flex-1" :class="row.depth === 0 ? 'font-medium text-foreground' : 'text-gray-700 dark:text-gray-300'">
                                 {{ row.label }}
                                 <span v-if="!row.is_active" class="text-xs text-gray-500">(dimatikan untuk semua)</span>
                             </span>
@@ -176,7 +176,7 @@ const formatDate = (value: string | null): string => (value ? new Date(value).to
                 </div>
 
                 <aside>
-                    <h2 class="mb-2 text-sm font-medium text-gray-800 dark:text-white/90">Pratinjau menu peran ini</h2>
+                    <h2 class="mb-2 text-sm font-medium text-foreground">Pratinjau menu peran ini</h2>
                     <p class="mb-2 text-xs text-muted-foreground">Sesuai pengaturan yang sudah tersimpan.</p>
                     <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
                         <div v-for="section in preview" :key="section.label" class="mb-4 last:mb-0">
@@ -196,18 +196,18 @@ const formatDate = (value: string | null): string => (value ? new Date(value).to
             </div>
         </section>
 
-        <section class="panel overflow-hidden">
+        <section class="rounded-xl border bg-card overflow-hidden">
             <div class="border-b border-gray-100 px-5 py-4 dark:border-gray-800">
-                <h2 class="font-medium text-gray-800 dark:text-white/90">Semua menu (berlaku untuk semua peran)</h2>
+                <h2 class="font-medium text-foreground">Semua menu (berlaku untuk semua peran)</h2>
                 <p class="text-xs text-muted-foreground">Ubah nama, ikon, grup, atau matikan sebuah menu untuk semua orang.</p>
             </div>
-            <table class="w-full text-left text-theme-sm">
+            <table class="w-full text-left text-sm">
                 <thead>
                     <tr class="border-b border-gray-100 bg-gray-50 dark:border-gray-800 dark:bg-white/[0.02]">
-                        <th class="px-5 py-3 text-theme-xs font-medium text-gray-500">Nama</th>
-                        <th class="px-5 py-3 text-theme-xs font-medium text-gray-500">Bagian</th>
-                        <th class="px-5 py-3 text-theme-xs font-medium text-gray-500">Izin</th>
-                        <th class="px-5 py-3 text-theme-xs font-medium text-gray-500">Urutan</th>
+                        <th class="px-5 py-3 text-xs font-medium text-gray-500">Nama</th>
+                        <th class="px-5 py-3 text-xs font-medium text-gray-500">Bagian</th>
+                        <th class="px-5 py-3 text-xs font-medium text-gray-500">Izin</th>
+                        <th class="px-5 py-3 text-xs font-medium text-gray-500">Urutan</th>
                         <th />
                     </tr>
                 </thead>
@@ -236,8 +236,8 @@ const formatDate = (value: string | null): string => (value ? new Date(value).to
             </table>
         </section>
 
-        <section class="panel p-5">
-            <h2 class="mb-3 font-medium text-gray-800 dark:text-white/90">Perubahan terakhir</h2>
+        <section class="rounded-xl border bg-card p-5">
+            <h2 class="mb-3 font-medium text-foreground">Perubahan terakhir</h2>
             <ul class="divide-y divide-gray-100 text-sm dark:divide-gray-800">
                 <li v-for="audit in audits" :key="audit.id" class="flex justify-between gap-3 py-2">
                     <span class="text-gray-700 dark:text-gray-300">{{ eventLabel(audit.event) }} · {{ audit.actor }}</span>

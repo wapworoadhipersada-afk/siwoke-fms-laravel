@@ -19,7 +19,7 @@ defineOptions({
     <div class="flex flex-1 flex-col gap-6">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
-                <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">Peran</h1>
+                <h1 class="text-xl font-semibold text-foreground">Peran</h1>
                 <p class="text-sm text-muted-foreground">
                     Peran menentukan apa yang boleh dilakukan seseorang. Menu yang tampil mengikuti peran dan izinnya.
                 </p>
@@ -32,11 +32,11 @@ defineOptions({
         <DataTable :columns="['Peran', 'Deskripsi', 'Izin', 'Pengguna', '']" :empty="roles.length === 0">
             <tr v-for="role in roles" :key="role.id">
                 <td class="px-5 py-4">
-                    <p class="font-medium text-gray-800 dark:text-white/90">{{ role.label }}</p>
+                    <p class="font-medium text-foreground">{{ role.label }}</p>
                     <p class="font-mono text-xs text-gray-500">{{ role.name }}</p>
                     <span
                         v-if="role.is_system"
-                        class="mt-1 inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-theme-xs text-gray-700 dark:bg-white/5 dark:text-white/80"
+                        class="mt-1 inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700 dark:bg-white/5 dark:text-white/80"
                     >
                         Bawaan
                     </span>

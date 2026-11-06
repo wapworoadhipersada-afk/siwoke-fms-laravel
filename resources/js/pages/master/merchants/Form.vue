@@ -56,8 +56,8 @@ const cancelUrl = computed(() =>
 <template>
     <Head :title="title" />
 
-    <div class="flex flex-1 flex-col gap-6">
-        <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">{{ title }}</h1>
+    <div class="flex flex-1 flex-col gap-6 p-4">
+        <h1 class="text-xl font-semibold tracking-tight">{{ title }}</h1>
 
         <Form
             v-bind="form"
