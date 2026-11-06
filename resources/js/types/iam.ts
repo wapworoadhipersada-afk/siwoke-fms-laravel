@@ -35,6 +35,8 @@ export type UserRow = {
     user_code: string | null;
     photo_url: string | null;
     user_type_label: string;
+    phone: string | null;
+    employment_label: string | null;
     roles: string[];
     is_active: boolean;
     is_self: boolean;

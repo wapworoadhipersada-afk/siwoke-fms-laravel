@@ -26,10 +26,6 @@ const props = defineProps<{
     can: { manage: boolean };
 }>();
 
-defineOptions({
-    layout: { breadcrumbs: [{ title: 'Dokumen', href: MerchantDocumentController.index() }] },
-});
-
 const filters = useListFilters(MerchantDocumentController.index.url(), { ...props.filters });
 </script>
 

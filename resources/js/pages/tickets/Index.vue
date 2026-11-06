@@ -12,12 +12,6 @@ import { useListFilters } from '@/composables/useListFilters';
 import type { Option, Paginator, UlidOption, VendorOption } from '@/types/master';
 import type { TicketRow, TicketTypeOption } from '@/types/ticket';
 
-defineOptions({
-    layout: {
-        breadcrumbs: [{ title: 'Tiket', href: TicketController.index() }],
-    },
-});
-
 const props = defineProps<{
     tickets: Paginator<TicketRow>;
     filters: {

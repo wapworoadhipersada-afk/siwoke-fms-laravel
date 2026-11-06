@@ -17,12 +17,6 @@ const props = defineProps<{
     statuses: Option[];
 }>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [{ title: 'TID', href: TerminalController.index() }],
-    },
-});
-
 const form = computed(() =>
     props.terminal
         ? TerminalController.update.form(props.terminal.ulid)

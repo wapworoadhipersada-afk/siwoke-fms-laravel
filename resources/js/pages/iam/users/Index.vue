@@ -19,11 +19,7 @@ const props = defineProps<{
 }>();
 
 const listUrl = props.field ? '/iam/engineers' : UserController.index.url();
-const heading = props.field ? 'Engineer / Teknisi' : 'Pengguna';
-
-defineOptions({
-    layout: { breadcrumbs: [] },
-});
+const heading = props.field ? 'Teknisi' : 'Pengguna';
 
 const filters = useListFilters(listUrl, { ...props.filters });
 </script>
@@ -36,7 +32,7 @@ const filters = useListFilters(listUrl, { ...props.filters });
             <div>
                 <h1 class="text-xl font-semibold text-foreground">{{ heading }}</h1>
                 <p class="text-sm text-muted-foreground">
-                    {{ field ? 'Leader dan teknisi lapangan: kode, area, vendor, dan peran.' : 'Akun kantor: admin, koordinator, managerial. Leader dan teknisi ada di menu Engineer / Teknisi.' }}
+                    {{ field ? 'Leader dan teknisi lapangan: kode, area, vendor, dan peran.' : 'Akun kantor: admin, koordinator, managerial. Leader dan teknisi ada di menu Teknisi.' }}
                 </p>
             </div>
             <Button v-if="can.create" as-child>
@@ -52,7 +48,7 @@ const filters = useListFilters(listUrl, { ...props.filters });
             </select>
         </div>
 
-        <DataTable :columns="['Nama', 'Jenis', 'Peran', 'Status', '']" :empty="users.data.length === 0">
+        <DataTable :columns="field ? ['Nama', 'Kepegawaian', 'Posisi', 'Status', ''] : ['Nama', 'Jenis', 'Peran', 'Status', '']" :empty="users.data.length === 0">
             <tr v-for="user in users.data" :key="user.ulid">
                 <td class="px-5 py-4">
                     <div class="flex items-center gap-3">
@@ -64,7 +60,11 @@ const filters = useListFilters(listUrl, { ...props.filters });
                         </div>
                     </div>
                 </td>
-                <td class="px-5 py-4">{{ user.user_type_label }}</td>
+                <td v-if="field" class="px-5 py-4">
+                    <p>{{ user.employment_label ?? '—' }}</p>
+                    <p class="text-xs text-muted-foreground">{{ user.phone ?? '' }}</p>
+                </td>
+                <td v-else class="px-5 py-4">{{ user.user_type_label }}</td>
                 <td class="px-5 py-4">
                     <span
                         v-for="role in user.roles"

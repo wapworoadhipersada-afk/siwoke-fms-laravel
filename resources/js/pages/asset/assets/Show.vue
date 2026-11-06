@@ -27,12 +27,6 @@ const props = defineProps<{
     can: { update: boolean; approve: boolean };
 }>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [{ title: 'Aset', href: AssetController.index() }],
-    },
-});
-
 const action = ref('');
 
 // Only moves that make sense for where the asset is now. The server enforces the same rules.

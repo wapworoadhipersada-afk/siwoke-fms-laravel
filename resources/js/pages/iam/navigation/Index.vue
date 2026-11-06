@@ -16,15 +16,6 @@ const props = defineProps<{
     audits: AuditEntry[];
 }>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            { title: 'Pengaturan', href: '/iam/settings' },
-            { title: 'Pengaturan Menu', href: NavigationController.index() },
-        ],
-    },
-});
-
 const groups = computed(() => props.menus.filter((menu) => menu.is_group));
 
 const destination = (menu: MenuEntry): string => {

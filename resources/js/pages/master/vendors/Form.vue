@@ -11,12 +11,6 @@ import type { Vendor } from '@/types/master';
 
 const props = defineProps<{ vendor: Vendor | null }>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [{ title: 'Vendor', href: VendorController.index() }],
-    },
-});
-
 const form = computed(() =>
     props.vendor
         ? VendorController.update.form(props.vendor.ulid)

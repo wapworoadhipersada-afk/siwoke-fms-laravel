@@ -51,7 +51,7 @@ final class NavigationCatalog
 
             $group('access', 'Pengaturan', 'Pengguna dan akses', 'users'),
             $page('access.users', 'access', 'Pengaturan', 'Pengguna', 'iam.users.index', 'users', Permissions::IAM_USER_VIEW),
-            $page('access.engineers', 'access', 'Pengaturan', 'Engineer / Teknisi', 'iam.engineers.index', 'user', Permissions::IAM_USER_VIEW),
+            $page('access.engineers', 'access', 'Pengaturan', 'Teknisi', 'iam.engineers.index', 'user', Permissions::IAM_USER_VIEW),
             $page('access.team', 'access', 'Pengaturan', 'Tim', 'master.team.index', 'users', Permissions::IAM_USER_VIEW),
 
             $page('settings', null, 'Pengaturan', 'Pengaturan', 'iam.settings.index', 'gear', Permissions::IAM_ROLE_MANAGE),

@@ -19,12 +19,6 @@ const props = defineProps<{
     can: { export: boolean };
 }>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [{ title: 'Laporan tiket', href: TicketReportController.index() }],
-    },
-});
-
 const filters = useListFilters(TicketReportController.index.url(), { ...props.filters });
 
 // The export carries the same filters, so the file matches what is on screen.

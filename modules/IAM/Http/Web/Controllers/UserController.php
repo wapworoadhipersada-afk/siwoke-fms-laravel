@@ -72,6 +72,8 @@ final class UserController extends ModuleController
                 'user_code' => $user->user_code,
                 'photo_url' => $user->photo_url,
                 'user_type_label' => $user->user_type->label(),
+                'phone' => $user->phone,
+                'employment_label' => $user->employment_status?->label(),
                 'roles' => array_values($user->roles->map(fn (Model $item): string => (string) ($item->getAttribute('label') ?? $item->getAttribute('name')))->all()),
                 'is_active' => $user->is_active,
                 'is_self' => $user->is($viewer),
@@ -81,7 +83,6 @@ final class UserController extends ModuleController
             'users' => $users,
             'filters' => ['q' => $search, 'role' => $role],
             'field' => $field,
-            'sectionTitle' => $field ? 'Engineer / Teknisi' : 'Pengguna',
             'roles' => collect($this->roleOptions())->filter(fn (array $option): bool => in_array($option['name'], $fieldRoles, true) === $field)->values()->all(),
             'can' => [
                 'create' => $viewer->can(Permissions::IAM_USER_CREATE),
@@ -107,7 +108,6 @@ final class UserController extends ModuleController
             'account' => ['name' => $result['user']->name, 'email' => $result['user']->email],
             'password' => $result['password'],
             'reset' => false,
-            'sectionTitle' => 'Pengguna',
             'sectionHref' => route('iam.users.index', absolute: false),
             'coverageHref' => null,
         ]);
@@ -162,7 +162,6 @@ final class UserController extends ModuleController
             'account' => ['name' => $managedUser->name, 'email' => $managedUser->email],
             'password' => $password,
             'reset' => true,
-            'sectionTitle' => FieldAccount::is($managedUser) ? 'Engineer / Teknisi' : 'Pengguna',
             'sectionHref' => FieldAccount::is($managedUser) ? route('iam.engineers.index', absolute: false) : route('iam.users.index', absolute: false),
             'coverageHref' => null,
         ]);
@@ -191,9 +190,9 @@ final class UserController extends ModuleController
 
         $roles = array_values($data['roles'] ?? []);
 
-        // Leaders and engineers are created and changed under Engineer / Teknisi, never through this form.
+        // Leaders and engineers are created and changed under Teknisi, never through this form.
         if (array_intersect($roles, FieldAccount::roles()) !== [] || $data['user_type'] === UserType::Technician->value) {
-            throw ValidationException::withMessages(['roles' => 'Leader dan teknisi diatur lewat menu Engineer / Teknisi.']);
+            throw ValidationException::withMessages(['roles' => 'Leader dan teknisi diatur lewat menu Teknisi.']);
         }
 
         return [...$data, 'is_active' => (bool) ($data['is_active'] ?? true), 'roles' => $roles];

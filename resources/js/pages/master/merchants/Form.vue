@@ -24,14 +24,6 @@ const props = defineProps<{
     vendors: VendorOption[];
 }>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            { title: 'Merchant', href: MerchantController.index() },
-        ],
-    },
-});
-
 const form = computed(() =>
     props.merchant
         ? MerchantController.update.form(props.merchant.ulid)

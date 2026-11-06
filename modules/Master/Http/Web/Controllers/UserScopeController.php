@@ -32,27 +32,27 @@ final class UserScopeController extends MasterController
         $field = FieldAccount::is($managedUser);
 
         return Inertia::render('master/user-scopes/Edit', [
-            'sectionTitle' => $field ? 'Engineer / Teknisi' : 'Pengguna',
-            'sectionHref' => route($field ? 'iam.engineers.index' : 'iam.users.index', absolute: false),
             'backHref' => route($field ? 'iam.engineers.edit' : 'iam.users.edit', $managedUser->ulid, absolute: false),
             'managed' => [
                 'ulid' => $managedUser->ulid,
                 'name' => $managedUser->name,
                 'email' => $managedUser->email,
                 'user_code' => $managedUser->user_code,
+                'photo_url' => $managedUser->photo_url,
+                'roles' => $managedUser->roles->map(fn ($role): string => (string) ($role->getAttribute('label') ?? $role->getAttribute('name')))->values()->all(),
                 'sees_everything' => $managedUser->can(Permissions::DATA_SCOPE_ALL),
             ],
             'locations' => Location::query()->with('vendor')->orderBy('path')->get()->map(fn (Location $location): array => [
                 'id' => $location->id,
+                'parent_id' => $location->parent_id,
                 'name' => $location->name,
                 'code' => $location->code,
                 'type' => $location->type->value,
                 'type_label' => $location->type->label(),
-                'depth' => $location->depth,
                 'vendor' => $location->vendor === null ? null : $location->vendor->code,
             ])->values()->all(),
             'assigned' => DB::table('user_location_scopes')->where('user_id', $managedUser->id)->pluck('location_id')->map(fn (mixed $id): int => (int) $id)->values()->all(),
-            'vendors' => Vendor::query()->where('is_active', true)->orderBy('name')->get()->map(fn (Vendor $vendor): array => ['ulid' => $vendor->ulid, 'label' => "{$vendor->code} — {$vendor->name}"])->values()->all(),
+            'vendors' => Vendor::query()->where('is_active', true)->orderBy('name')->get()->map(fn (Vendor $vendor): array => ['ulid' => $vendor->ulid, 'code' => $vendor->code, 'label' => "{$vendor->code} — {$vendor->name}"])->values()->all(),
             'assignedVendors' => Vendor::query()->whereIn('id', DB::table('user_vendors')->where('user_id', $managedUser->id)->pluck('vendor_id'))->pluck('ulid')->values()->all(),
         ]);
     }
@@ -78,9 +78,14 @@ final class UserScopeController extends MasterController
 
             $areas->handle($managedUser, array_values($data['location_ids'] ?? []));
             $vendors->handle($managedUser, $vendorIds, $this->user());
-            $this->success('Cakupan pengguna disimpan.');
+            $this->success('Vendor dan area disimpan.');
         } catch (ValidationException $exception) {
             $this->refusal($exception);
+        }
+
+        // "Simpan dan selesai" goes back to the list the person came from; "Simpan" stays to keep adjusting.
+        if ($request->boolean('done')) {
+            return to_route(FieldAccount::is($managedUser) ? 'iam.engineers.index' : 'iam.users.index');
         }
 
         return to_route('master.user-scopes.edit', $managedUser->ulid);

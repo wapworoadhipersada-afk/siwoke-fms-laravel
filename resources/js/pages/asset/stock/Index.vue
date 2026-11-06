@@ -10,12 +10,6 @@ import { useListFilters } from '@/composables/useListFilters';
 import type { StockRow } from '@/types/asset';
 import type { Paginator, VendorOption } from '@/types/master';
 
-defineOptions({
-    layout: {
-        breadcrumbs: [{ title: 'Stok', href: StockController.index() }],
-    },
-});
-
 const props = defineProps<{
     stocks: Paginator<StockRow>;
     filters: { q: string; vendor: string };

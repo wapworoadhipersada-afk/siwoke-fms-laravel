@@ -79,7 +79,7 @@ describe('Tim', function () {
     });
 });
 
-describe('Pengguna and Engineer / Teknisi', function () {
+describe('Pengguna and Teknisi', function () {
     it('lists office accounts under Pengguna and leaders and engineers under their own menu', function () {
         person(RoleName::Leader, 'Si Leader');
         person(RoleName::Technician, 'Si Teknisi');
@@ -96,12 +96,12 @@ describe('Pengguna and Engineer / Teknisi', function () {
                 ->where('users.data', fn ($rows) => collect($rows)->pluck('name')->sort()->values()->all() === ['Si Leader', 'Si Teknisi']));
     });
 
-    it('puts Engineer / Teknisi and Tim in the sidebar', function () {
+    it('puts Teknisi and Tim in the sidebar', function () {
         $labels = collect(app(NavigationMenuService::class)->forUser($this->admin->fresh()))
             ->flatMap(fn ($section) => $section['items'])
             ->flatMap(fn ($item) => [$item['label'], ...array_column($item['children'], 'label')])->all();
 
-        expect($labels)->toContain('Engineer / Teknisi', 'Tim', 'Dokumen', 'Provinsi', 'Service Point', 'Area Kelolaan');
+        expect($labels)->toContain('Teknisi', 'Tim', 'Dokumen', 'Provinsi', 'Service Point', 'Area Kelolaan');
     });
 });
 

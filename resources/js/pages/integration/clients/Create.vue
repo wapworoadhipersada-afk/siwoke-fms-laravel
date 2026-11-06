@@ -11,14 +11,6 @@ import type { UlidOption } from '@/types/master';
 
 const props = defineProps<{ vendors: UlidOption[] }>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            { title: 'Klien integrasi', href: IntegrationClientController.index() },
-        ],
-    },
-});
-
 const vendorOptions = computed(() =>
     props.vendors.map((vendor) => ({ value: vendor.ulid, label: vendor.label })),
 );

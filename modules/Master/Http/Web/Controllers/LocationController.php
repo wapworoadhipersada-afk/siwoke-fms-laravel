@@ -80,7 +80,6 @@ final class LocationController extends MasterController
             'locations' => $locations,
             'filters' => ['q' => $search, 'type' => $type instanceof LocationType ? $type->value : ''],
             'fixedType' => $fixed?->value,
-            'sectionTitle' => $fixed === null ? 'Lokasi' : $fixed->label(),
             'types' => $this->typeOptions(),
             'can' => ['manage' => $this->user()->can(Permissions::MASTER_LOCATION_MANAGE)],
         ]);

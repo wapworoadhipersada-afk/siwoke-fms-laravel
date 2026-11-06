@@ -18,14 +18,6 @@ const props = defineProps<{
     stocks: StockLine[];
 }>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            { title: 'Serah-terima', href: HandoverController.index() },
-        ],
-    },
-});
-
 const warehouseOptions = computed(() =>
     props.warehouses.map((warehouse) => ({
         value: warehouse.ulid,

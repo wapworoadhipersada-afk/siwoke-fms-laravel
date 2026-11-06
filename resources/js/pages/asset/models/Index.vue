@@ -13,14 +13,6 @@ import { useListFilters } from '@/composables/useListFilters';
 import type { CategoryOption, ModelRow } from '@/types/asset';
 import type { Paginator } from '@/types/master';
 
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            { title: 'Jenis aset', href: AssetModelController.index() },
-        ],
-    },
-});
-
 const props = defineProps<{
     models: Paginator<ModelRow>;
     filters: { q: string; category: string };

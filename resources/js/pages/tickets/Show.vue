@@ -47,12 +47,6 @@ const props = defineProps<{
     };
 }>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [{ title: 'Tiket', href: TicketController.index() }],
-    },
-});
-
 const technicianOptions = computed(() =>
     props.technicians.map((technician) => ({
         value: technician.ulid,

@@ -7,75 +7,11 @@ import AppSidebar from '@/components/AppSidebar.vue';
 import AppSidebarHeader from '@/components/AppSidebarHeader.vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import { Toaster } from '@/components/ui/sonner';
-import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
 
-type Props = {
-    breadcrumbs?: BreadcrumbItem[];
-};
-
-const props = withDefaults(defineProps<Props>(), {
-    breadcrumbs: () => [],
-});
-
+// The trail comes from the server (BreadcrumbTrail), built from the sidebar and the route name.
 const page = usePage();
-
-// What the last part of an address says about the page: a form to add, a form to change, a record's detail.
-const currentPageLabel = computed((): string | null => {
-    const name = page.component.split('/').pop() ?? '';
-    const path = page.url.split('?')[0];
-
-    if (name === 'Index' || name === 'Dashboard') {
-        return null;
-    }
-
-    if (path.endsWith('/create')) {
-        return 'Tambah';
-    }
-
-    if (path.endsWith('/edit')) {
-        return 'Ubah';
-    }
-
-    return (
-        {
-            Show: 'Detail',
-            Receive: 'Terima aset',
-            Credentials: 'Kunci rahasia',
-            Form: 'Form',
-            Edit: 'Ubah',
-            Create: 'Tambah',
-        }[name] ?? name
-    );
-});
-
-// Home, then the section the page declares, then the page itself, so anyone can see where they are and
-// go back up a level without the browser's back button.
-const trail = computed((): BreadcrumbItem[] => {
-    if (page.component === 'Dashboard') {
-        return [];
-    }
-
-    const items: BreadcrumbItem[] = [
-        { title: 'Beranda', href: dashboard() },
-        ...props.breadcrumbs,
-    ];
-
-    // A page whose section name depends on the data (one list serving two menus) names it itself.
-    const section = page.props.sectionTitle;
-
-    if (props.breadcrumbs.length === 0 && typeof section === 'string') {
-        const href = page.props.sectionHref;
-
-        items.push({ title: section, href: typeof href === 'string' ? href : page.url.split('?')[0] });
-    }
-
-    if (currentPageLabel.value !== null) {
-        items.push({ title: currentPageLabel.value, href: page.url });
-    }
-
-    return items;
-});
+const trail = computed((): BreadcrumbItem[] => (page.props.breadcrumbs as BreadcrumbItem[] | undefined) ?? []);
 </script>
 
 <template>

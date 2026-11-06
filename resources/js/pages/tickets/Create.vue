@@ -16,12 +16,6 @@ const props = defineProps<{
     priorities: Option[];
 }>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [{ title: 'Tiket', href: TicketController.index() }],
-    },
-});
-
 const vendorOptions = computed(() =>
     props.vendors.map((vendor) => ({
         value: vendor.ulid,

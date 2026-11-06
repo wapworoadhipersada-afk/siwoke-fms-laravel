@@ -16,13 +16,6 @@ const props = defineProps<{
     audits: AuditEntry[];
 }>();
 
-defineOptions({
-    layout: { breadcrumbs: [
-            { title: 'Pengaturan', href: '/iam/settings' },
-            { title: 'Menu per Peran', href: NavigationController.access() },
-        ] },
-});
-
 // What is edited for the chosen role lives here until it is saved.
 const local = ref<MenuSetting[]>(props.settings.map((item) => ({ ...item })));
 const saving = ref(false);

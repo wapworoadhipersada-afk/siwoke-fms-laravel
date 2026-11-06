@@ -17,14 +17,6 @@ const props = defineProps<{
     servicePoints: UlidOption[];
 }>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            { title: 'Merchant', href: MerchantController.index() },
-        ],
-    },
-});
-
 const form = computed(() =>
     props.site
         ? MerchantSiteController.update.form(props.site.ulid)

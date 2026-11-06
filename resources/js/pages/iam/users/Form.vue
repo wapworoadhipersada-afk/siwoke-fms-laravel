@@ -17,10 +17,6 @@ const props = defineProps<{
     types: { value: string; label: string }[];
 }>();
 
-defineOptions({
-    layout: { breadcrumbs: [{ title: 'Pengguna', href: UserController.index() }] },
-});
-
 const form = computed(() => (props.managed ? UserController.update.form(props.managed.ulid) : UserController.store.form()));
 const title = computed(() => (props.managed ? `Ubah ${props.managed.name}` : 'Tambah pengguna'));
 // A new password cuts off the old one at once and ends mobile sessions, so ask first.

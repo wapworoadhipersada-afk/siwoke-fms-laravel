@@ -9,13 +9,6 @@ defineProps<{
     webhook_secret: string | null;
 }>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            { title: 'Klien integrasi', href: IntegrationClientController.index() },
-        ],
-    },
-});
 </script>
 
 <template>

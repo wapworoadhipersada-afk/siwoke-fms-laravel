@@ -6,15 +6,9 @@ defineProps<{
     account: { name: string; email: string };
     password: string | null;
     reset: boolean;
-    sectionTitle: string;
     sectionHref: string;
     coverageHref: string | null;
 }>();
-
-defineOptions({
-    // The section (Pengguna or Engineer / Teknisi) is named by the server; the layout adds it to the trail.
-    layout: { breadcrumbs: [] },
-});
 </script>
 
 <template>

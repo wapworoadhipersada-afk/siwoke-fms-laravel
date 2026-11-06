@@ -10,14 +10,6 @@ import { Input } from '@/components/ui/input';
 import { useListFilters } from '@/composables/useListFilters';
 import type { MerchantRow, Paginator, VendorOption } from '@/types/master';
 
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            { title: 'Merchant', href: MerchantController.index() },
-        ],
-    },
-});
-
 const props = defineProps<{
     merchants: Paginator<MerchantRow>;
     filters: { q: string; vendor: string };

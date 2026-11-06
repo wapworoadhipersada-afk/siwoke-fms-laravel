@@ -17,12 +17,6 @@ const props = defineProps<{
     conditions: Option[];
 }>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [{ title: 'Aset', href: AssetController.index() }],
-    },
-});
-
 const selectedModel = ref('');
 const tracking = computed(
     () => props.models.find((model) => model.ulid === selectedModel.value)?.tracking,

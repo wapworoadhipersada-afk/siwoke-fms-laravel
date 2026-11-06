@@ -17,12 +17,6 @@ import type {
     VendorOption,
 } from '@/types/master';
 
-defineOptions({
-    layout: {
-        breadcrumbs: [{ title: 'TID', href: TerminalController.index() }],
-    },
-});
-
 const props = defineProps<{
     terminals: Paginator<TerminalRow>;
     filters: { q: string; vendor: string; status: string };

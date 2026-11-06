@@ -18,12 +18,6 @@ const props = defineProps<{
     vendors: UlidOption[];
 }>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [{ title: 'Lokasi', href: LocationController.index() }],
-    },
-});
-
 // What a node of each type must sit under; the hierarchy is fixed.
 const parentTypeOf: Record<string, string | null> = {
     province: null,

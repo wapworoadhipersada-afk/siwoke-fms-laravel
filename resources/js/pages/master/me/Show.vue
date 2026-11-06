@@ -21,9 +21,6 @@ defineProps<{
     areas: { name: string; type_label: string; parent: string | null; vendor: string | null }[];
 }>();
 
-defineOptions({
-    layout: { breadcrumbs: [{ title: 'Profil Saya', href: MeController.show() }] },
-});
 </script>
 
 <template>

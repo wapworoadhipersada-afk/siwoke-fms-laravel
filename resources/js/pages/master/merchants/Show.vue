@@ -21,14 +21,6 @@ const props = defineProps<{
     can: { manage: boolean; manageTerminals: boolean };
 }>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            { title: 'Merchant', href: MerchantController.index() },
-        ],
-    },
-});
-
 const details: [string, string | null][] = [
     ['MID', props.merchant.merchant_code],
     ['Vendor', props.merchant.vendor],

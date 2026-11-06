@@ -10,12 +10,6 @@ import { Input } from '@/components/ui/input';
 import { useListFilters } from '@/composables/useListFilters';
 import type { Paginator, Vendor } from '@/types/master';
 
-defineOptions({
-    layout: {
-        breadcrumbs: [{ title: 'Vendor', href: VendorController.index() }],
-    },
-});
-
 const props = defineProps<{
     vendors: Paginator<Vendor>;
     filters: { q: string };

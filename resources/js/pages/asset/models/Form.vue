@@ -23,14 +23,6 @@ const props = defineProps<{
     categories: CategoryOption[];
 }>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            { title: 'Jenis aset', href: AssetModelController.index() },
-        ],
-    },
-});
-
 const form = computed(() =>
     props.model
         ? AssetModelController.update.form(props.model.ulid)

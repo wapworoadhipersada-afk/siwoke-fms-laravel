@@ -6,9 +6,6 @@ defineProps<{
     cards: { title: string; description: string; href: string; icon: string }[];
 }>();
 
-defineOptions({
-    layout: { breadcrumbs: [{ title: 'Pengaturan', href: '/iam/settings' }] },
-});
 </script>
 
 <template>

@@ -17,12 +17,6 @@ const props = defineProps<{
     can: { retry: boolean };
 }>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [{ title: 'Log integrasi', href: IntegrationLogController.index() }],
-    },
-});
-
 const filters = useListFilters(IntegrationLogController.index.url(), {
     direction: props.filters.direction,
     outcome: props.filters.outcome,

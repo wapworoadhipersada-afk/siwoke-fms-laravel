@@ -20,9 +20,6 @@ type Team = {
 
 defineProps<{ teams: Team[] }>();
 
-defineOptions({
-    layout: { breadcrumbs: [{ title: 'Tim', href: '/master/team' }] },
-});
 </script>
 
 <template>

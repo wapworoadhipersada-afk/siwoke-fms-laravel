@@ -37,10 +37,6 @@ defineProps<{
     can: { manage: boolean };
 }>();
 
-defineOptions({
-    layout: { breadcrumbs: [{ title: 'Dokumen', href: MerchantDocumentController.index() }] },
-});
-
 const statusLabel: Record<Line['status'], string> = {
     pending: 'Siap diimpor',
     error: 'Bermasalah',

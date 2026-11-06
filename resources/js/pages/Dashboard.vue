@@ -3,7 +3,6 @@ import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import IntegrationLogController from '@/actions/Modules/Integration/Http/Web/Controllers/IntegrationLogController';
 import TicketController from '@/actions/Modules/Ticket/Http/Web/Controllers/TicketController';
-import { dashboard } from '@/routes';
 import type { AssetStats, IntegrationStats, TicketStats } from '@/types/report';
 
 const props = defineProps<{
@@ -12,12 +11,6 @@ const props = defineProps<{
     integration: IntegrationStats | null;
     performance_days: number;
 }>();
-
-defineOptions({
-    layout: {
-        breadcrumbs: [{ title: 'Dashboard', href: dashboard() }],
-    },
-});
 
 const maxTrend = computed(() =>
     Math.max(1, ...(props.tickets?.trend.flatMap((day) => [day.created, day.closed]) ?? [1])),

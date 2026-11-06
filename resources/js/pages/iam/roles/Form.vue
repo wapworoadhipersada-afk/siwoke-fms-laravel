@@ -15,10 +15,6 @@ const props = defineProps<{
     canGrantPrivileged: boolean;
 }>();
 
-defineOptions({
-    layout: { breadcrumbs: [{ title: 'Peran', href: RoleController.index() }] },
-});
-
 const form = computed(() => (props.role ? RoleController.update.form(routeArg(props.role.id)) : RoleController.store.form()));
 const title = computed(() => (props.role ? `Ubah peran ${props.role.label}` : 'Tambah peran'));
 const locked = computed(() => props.role?.locked ?? false);

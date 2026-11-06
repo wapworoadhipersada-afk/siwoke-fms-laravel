@@ -11,12 +11,6 @@ import { useListFilters } from '@/composables/useListFilters';
 import type { WarehouseRow } from '@/types/asset';
 import type { Paginator } from '@/types/master';
 
-defineOptions({
-    layout: {
-        breadcrumbs: [{ title: 'Gudang', href: WarehouseController.index() }],
-    },
-});
-
 const props = defineProps<{
     warehouses: Paginator<WarehouseRow>;
     filters: { q: string };

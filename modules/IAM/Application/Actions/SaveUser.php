@@ -28,7 +28,7 @@ final class SaveUser
     public function __construct(private readonly RevokeAllUserSessions $revoke) {}
 
     /**
-     * @param  array{name: string, email: string, phone?: string|null, employee_no?: string|null, user_code?: string|null, user_type: string, is_active: bool, roles: list<string>}  $data
+     * @param  array{name: string, email: string, phone?: string|null, employee_no?: string|null, user_code?: string|null, username?: string|null, employment_status?: string|null, nik?: string|null, address?: string|null, password?: string|null, user_type: string, is_active: bool, roles: list<string>}  $data
      * @return array{user: User, password: string|null} the password is returned once, only for a new user
      */
     public function handle(?User $user, array $data, User $actor): array
@@ -56,10 +56,16 @@ final class SaveUser
             $created = ! $user instanceof User;
             $password = null;
 
+            // A password typed by the administrator is used as given and never shown again; without one, a
+            // temporary password is generated and returned once.
+            $chosen = isset($data['password']) && $data['password'] !== '' ? $data['password'] : null;
+
             if (! $user instanceof User) {
                 $user = new User;
-                $password = Str::password(14, symbols: false);
-                $user->forceFill(['password' => Hash::make($password), 'email_verified_at' => now()]);
+                $password = $chosen === null ? Str::password(14, symbols: false) : null;
+                $user->forceFill(['password' => Hash::make($chosen ?? (string) $password), 'email_verified_at' => now()]);
+            } elseif ($chosen !== null) {
+                $user->forceFill(['password' => Hash::make($chosen)]);
             }
 
             $wasActive = $created ? true : $user->is_active;
@@ -70,11 +76,20 @@ final class SaveUser
                 'phone' => $data['phone'] ?? null,
                 'employee_no' => $data['employee_no'] ?? null,
                 'user_code' => $userCode,
+                'username' => isset($data['username']) && $data['username'] !== '' ? Str::lower(trim($data['username'])) : $user->username,
+                'employment_status' => $data['employment_status'] ?? $user->employment_status,
+                'nik' => $data['nik'] ?? $user->nik,
+                'address' => $data['address'] ?? $user->address,
                 'user_type' => UserType::from($data['user_type']),
                 'is_active' => $data['is_active'],
             ])->save();
 
             $user->syncRoles($roles->all());
+
+            // A new password ends every session the person had, on the web and on the phone.
+            if (! $created && $chosen !== null) {
+                $this->revoke->handle($user);
+            }
 
             if ($wasActive && ! $data['is_active']) {
                 // A switched-off technician must not keep a working phone.

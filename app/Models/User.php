@@ -17,6 +17,7 @@ use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
+use Modules\IAM\Domain\Enums\EmploymentStatus;
 use Modules\IAM\Domain\Enums\UserType;
 use Modules\IAM\Domain\Models\Device;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
@@ -31,6 +32,10 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string|null $phone
  * @property string|null $employee_no
  * @property string|null $user_code
+ * @property string|null $username
+ * @property EmploymentStatus|null $employment_status
+ * @property string|null $nik
+ * @property string|null $address
  * @property string|null $photo_path
  * @property string|null $photo_thumb_path
  * @property UserType $user_type
@@ -46,8 +51,8 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  */
-#[Fillable(['name', 'email', 'password', 'phone', 'employee_no', 'user_code', 'user_type', 'is_active'])]
-#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token', 'photo_path', 'photo_thumb_path'])]
+#[Fillable(['name', 'email', 'password', 'phone', 'employee_no', 'user_code', 'username', 'employment_status', 'nik', 'address', 'user_type', 'is_active'])]
+#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token', 'photo_path', 'photo_thumb_path', 'nik', 'address'])]
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
@@ -106,7 +111,7 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     {
         return LogOptions::defaults()
             ->useLogName('iam')
-            ->logOnly(['name', 'email', 'phone', 'employee_no', 'user_type', 'is_active'])
+            ->logOnly(['name', 'email', 'phone', 'employee_no', 'username', 'employment_status', 'user_type', 'is_active'])
             ->logOnlyDirty()
             ->dontLogEmptyChanges();
     }
@@ -123,6 +128,7 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
             'user_type' => UserType::class,
+            'employment_status' => EmploymentStatus::class,
             'is_active' => 'boolean',
             'last_login_at' => 'datetime',
         ];

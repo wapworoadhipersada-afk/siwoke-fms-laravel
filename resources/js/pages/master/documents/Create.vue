@@ -14,10 +14,6 @@ const props = defineProps<{
     today: string;
 }>();
 
-defineOptions({
-    layout: { breadcrumbs: [{ title: 'Dokumen', href: MerchantDocumentController.index() }] },
-});
-
 const mode = ref<'upload' | 'manual'>('upload');
 const rows = ref<number[]>([0, 1, 2]);
 let next = 3;

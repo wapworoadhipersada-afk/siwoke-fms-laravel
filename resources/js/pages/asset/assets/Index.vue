@@ -12,12 +12,6 @@ import { useListFilters } from '@/composables/useListFilters';
 import type { AssetRow, ModelOption } from '@/types/asset';
 import type { Option, Paginator, VendorOption } from '@/types/master';
 
-defineOptions({
-    layout: {
-        breadcrumbs: [{ title: 'Aset', href: AssetController.index() }],
-    },
-});
-
 const props = defineProps<{
     assets: Paginator<AssetRow>;
     filters: { q: string; status: string; vendor: string; model: string };

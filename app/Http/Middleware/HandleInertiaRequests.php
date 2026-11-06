@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Modules\IAM\Application\Services\BreadcrumbTrail;
 use Modules\IAM\Application\Services\NavigationMenuService;
 use Modules\Master\Application\Services\VendorAccess;
 use Modules\Master\Domain\Models\Vendor;
@@ -51,6 +52,8 @@ class HandleInertiaRequests extends Middleware
             'navigation' => fn (): array => $request->user() instanceof User ? app(NavigationMenuService::class)->forUser($request->user()) : [],
             // The vendor switcher in the header: what the person may choose from, and what is chosen now.
             'vendorFocus' => fn (): array => $request->user() instanceof User ? $this->vendorFocus($request->user()) : ['current' => null, 'options' => []],
+            // Where this page sits, built from the sidebar and the route name (see BreadcrumbTrail).
+            'breadcrumbs' => fn (): array => $request->user() instanceof User ? app(BreadcrumbTrail::class)->forRoute($request->route()) : [],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

@@ -8,14 +8,6 @@ import type { IntegrationClientRow } from '@/types/integration';
 
 defineProps<{ clients: IntegrationClientRow[] }>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            { title: 'Klien integrasi', href: IntegrationClientController.index() },
-        ],
-    },
-});
-
 // Replacing a secret cuts off whoever still uses the old one, so ask first.
 const confirmRotate = (event: Event): void => {
     if (!window.confirm('Ganti kunci rahasia? Kunci lama langsung berhenti berlaku.')) {

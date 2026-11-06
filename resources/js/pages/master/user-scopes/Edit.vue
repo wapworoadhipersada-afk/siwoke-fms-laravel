@@ -2,206 +2,92 @@
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import UserScopeController from '@/actions/Modules/Master/Http/Web/Controllers/UserScopeController';
+import LocationTreePicker from '@/components/master/LocationTreePicker.vue';
+import type { PickerLocation } from '@/components/master/LocationTreePicker.vue';
 import { Button } from '@/components/ui/button';
 
 const props = defineProps<{
-    sectionTitle: string;
-    sectionHref: string;
     backHref: string;
     managed: {
         ulid: string;
         name: string;
         email: string;
         user_code: string | null;
+        photo_url: string | null;
+        roles: string[];
         sees_everything: boolean;
     };
-    locations: {
-        id: number;
-        name: string;
-        code: string;
-        type: string;
-        type_label: string;
-        depth: number;
-        vendor: string | null;
-    }[];
+    locations: PickerLocation[];
     assigned: number[];
-    vendors: { ulid: string; label: string }[];
+    vendors: { ulid: string; code: string; label: string }[];
     assignedVendors: string[];
 }>();
 
-defineOptions({
-    layout: { breadcrumbs: [] },
-});
+const chosenVendors = ref<string[]>([...props.assignedVendors]);
+const chosenAreas = ref<number[]>([...props.assigned]);
 
-const chosenAreas = ref<Set<number>>(new Set(props.assigned));
-const search = ref('');
+const vendorCodes = computed(() => props.vendors.filter((vendor) => chosenVendors.value.includes(vendor.ulid)).map((vendor) => vendor.code));
 
-const visible = computed(() => {
-    const term = search.value.trim().toLowerCase();
-
-    if (term === '') {
-        return props.locations;
-    }
-
-    return props.locations.filter(
-        (location) =>
-            location.name.toLowerCase().includes(term) ||
-            location.code.toLowerCase().includes(term),
-    );
-});
-
-const toggle = (id: number, on: boolean): void => {
-    const next = new Set(chosenAreas.value);
-
-    if (on) {
-        next.add(id);
-    } else {
-        next.delete(id);
-    }
-
-    chosenAreas.value = next;
+const toggleVendor = (ulid: string): void => {
+    chosenVendors.value = chosenVendors.value.includes(ulid) ? chosenVendors.value.filter((item) => item !== ulid) : [...chosenVendors.value, ulid];
 };
-
-const areaCount = computed(
-    () => props.locations.filter((l) => chosenAreas.value.has(l.id)).length,
-);
 </script>
 
 <template>
-    <Head title="Cakupan pengguna" />
+    <Head :title="`Vendor dan area ${managed.name}`" />
 
-    <div class="flex flex-1 flex-col gap-6 p-4">
-        <div>
-            <h1 class="text-xl font-semibold">
-                Cakupan {{ managed.name }}
-                <span
-                    v-if="managed.user_code"
-                    class="font-mono text-base text-muted-foreground"
-                >
-                    ({{ managed.user_code }})
-                </span>
-            </h1>
-            <p class="text-sm text-muted-foreground">
-                Satu orang bisa memegang beberapa area dan beberapa vendor.
-                Memilih provinsi atau service point otomatis mencakup semua
-                area di bawahnya. Tanpa area, orang ini tidak melihat data apa
-                pun, kecuali perannya melihat semua area.
-            </p>
-            <p
-                v-if="managed.sees_everything"
-                class="mt-2 text-sm text-amber-700 dark:text-amber-400"
-            >
-                Peran orang ini melihat semua area, jadi pilihan area tidak
-                berpengaruh.
-            </p>
-        </div>
-
-        <Form
-            v-bind="UserScopeController.update.form(managed.ulid)"
-            class="grid max-w-5xl gap-6 lg:grid-cols-2"
-            v-slot="{ errors, processing }"
-        >
-            <section class="rounded-xl border bg-card p-5">
-                <h2 class="font-medium">Vendor</h2>
-                <p class="mb-3 text-xs text-muted-foreground">
-                    Kosong berarti tidak dibatasi vendor. Bila diisi, orang ini
-                    hanya melihat vendor yang dipilih.
+    <Form v-bind="UserScopeController.update.form(managed.ulid)" class="flex flex-1 flex-col gap-6 p-4 pb-28 md:p-6" v-slot="{ errors, processing }">
+        <header class="flex flex-wrap items-center gap-4">
+            <img v-if="managed.photo_url" :src="managed.photo_url" :alt="managed.name" class="size-14 rounded-full border object-cover" />
+            <span v-else class="flex size-14 items-center justify-center rounded-full border bg-muted text-lg font-semibold text-muted-foreground">{{ managed.name.slice(0, 1).toUpperCase() }}</span>
+            <div class="min-w-0 flex-1">
+                <h1 class="truncate text-xl font-semibold">{{ managed.name }}</h1>
+                <p class="text-sm text-muted-foreground">
+                    <span v-if="managed.user_code" class="font-mono">{{ managed.user_code }} · </span>{{ managed.roles.join(', ') }}
                 </p>
-                <ul class="space-y-2">
-                    <li v-for="vendor in vendors" :key="vendor.ulid">
-                        <label class="flex items-center gap-2 text-sm">
-                            <input
-                                type="checkbox"
-                                name="vendor_ids[]"
-                                :value="vendor.ulid"
-                                :checked="assignedVendors.includes(vendor.ulid)"
-                                class="size-4 rounded border-input accent-primary"
-                            />
-                            {{ vendor.label }}
-                        </label>
-                    </li>
-                    <li
-                        v-if="vendors.length === 0"
-                        class="text-sm text-muted-foreground"
-                    >
-                        Belum ada vendor.
-                    </li>
-                </ul>
-                <p v-if="errors.vendor_ids" class="mt-2 text-sm text-destructive">
-                    {{ errors.vendor_ids }}
-                </p>
-            </section>
-
-            <section class="rounded-xl border bg-card p-5">
-                <div class="mb-3 flex items-center justify-between gap-3">
-                    <div>
-                        <h2 class="font-medium">Area kerja</h2>
-                        <p class="text-xs text-muted-foreground">
-                            {{ areaCount }} dipilih
-                        </p>
-                    </div>
-                    <input
-                        v-model="search"
-                        type="search"
-                        placeholder="Cari lokasi…"
-                        class="h-9 w-44 rounded-md border bg-transparent px-3 text-sm"
-                    />
-                </div>
-
-                <ul
-                    class="max-h-[28rem] divide-y overflow-y-auto rounded-lg border"
-                >
-                    <li
-                        v-for="location in visible"
-                        :key="location.id"
-                        class="px-3 py-2"
-                    >
-                        <label
-                            class="flex items-center gap-3 text-sm"
-                            :style="{
-                                paddingLeft: `${(location.depth - 1) * 20}px`,
-                            }"
-                        >
-                            <input
-                                type="checkbox"
-                                name="location_ids[]"
-                                :value="location.id"
-                                :checked="chosenAreas.has(location.id)"
-                                class="size-4 rounded border-input accent-primary"
-                                @change="
-                                    toggle(
-                                        location.id,
-                                        ($event.target as HTMLInputElement)
-                                            .checked,
-                                    )
-                                "
-                            />
-                            <span :class="location.depth === 1 ? 'font-medium' : ''">{{
-                                location.name
-                            }}</span>
-                            <span class="text-xs text-muted-foreground">
-                                {{ location.type_label
-                                }}<template v-if="location.vendor">
-                                    · {{ location.vendor }}</template
-                                >
-                            </span>
-                        </label>
-                    </li>
-                    <li
-                        v-if="visible.length === 0"
-                        class="px-3 py-6 text-sm text-muted-foreground"
-                    >
-                        Tidak ada lokasi yang cocok.
-                    </li>
-                </ul>
-            </section>
-
-            <div class="flex gap-2 lg:col-span-2">
-                <Button type="submit" :disabled="processing">Simpan cakupan</Button>
-                <Button variant="outline" as-child>
-                    <Link :href="backHref">Kembali</Link>
-                </Button>
             </div>
-        </Form>
-    </div>
+        </header>
+
+        <p v-if="managed.sees_everything" class="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm">
+            Peran orang ini melihat semua area, jadi pilihan area di bawah tidak berpengaruh.
+        </p>
+
+        <section class="space-y-3 rounded-xl border bg-card p-5">
+            <div>
+                <h2 class="font-medium">1. Vendor</h2>
+                <p class="text-sm text-muted-foreground">Pilih vendor yang ditangani. Tidak memilih apa pun berarti tidak dibatasi vendor.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <label
+                    v-for="vendor in vendors"
+                    :key="vendor.ulid"
+                    class="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2 text-sm transition has-[:checked]:border-primary has-[:checked]:bg-accent has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring"
+                >
+                    <input type="checkbox" name="vendor_ids[]" :value="vendor.ulid" :checked="chosenVendors.includes(vendor.ulid)" class="size-4 accent-primary" @change="toggleVendor(vendor.ulid)" />
+                    {{ vendor.label }}
+                </label>
+                <p v-if="vendors.length === 0" class="text-sm text-muted-foreground">Belum ada vendor aktif.</p>
+            </div>
+            <p v-if="errors.vendor_ids" class="text-sm text-destructive">{{ errors.vendor_ids }}</p>
+        </section>
+
+        <section class="space-y-3 rounded-xl border bg-card p-5">
+            <div>
+                <h2 class="font-medium">2. Area kerja</h2>
+                <p class="text-sm text-muted-foreground">Tanpa area, orang ini tidak melihat data apa pun (kecuali perannya melihat semua area).</p>
+            </div>
+            <LocationTreePicker v-model="chosenAreas" :locations="locations" :vendor-codes="vendorCodes" />
+            <p v-if="errors.location_ids" class="text-sm text-destructive">{{ errors.location_ids }}</p>
+        </section>
+
+        <div class="fixed inset-x-0 bottom-0 z-10 border-t bg-background/95 px-4 py-3 backdrop-blur md:left-[var(--sidebar-width,0px)]">
+            <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-end gap-2">
+                <Button variant="ghost" as-child>
+                    <Link :href="backHref">Kembali ke data</Link>
+                </Button>
+                <Button type="submit" variant="outline" :disabled="processing">Simpan</Button>
+                <Button type="submit" name="done" value="1" :disabled="processing">Simpan dan selesai</Button>
+            </div>
+        </div>
+    </Form>
 </template>

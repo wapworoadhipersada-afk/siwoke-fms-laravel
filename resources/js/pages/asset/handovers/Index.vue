@@ -21,14 +21,6 @@ import { useListFilters } from '@/composables/useListFilters';
 import type { HandoverRow } from '@/types/asset';
 import type { Option, Paginator } from '@/types/master';
 
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            { title: 'Serah-terima', href: HandoverController.index() },
-        ],
-    },
-});
-
 const props = defineProps<{
     handovers: Paginator<HandoverRow>;
     filters: { status: string };

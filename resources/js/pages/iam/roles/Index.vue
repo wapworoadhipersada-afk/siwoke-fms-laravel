@@ -9,9 +9,6 @@ import type { RoleRow } from '@/types/iam';
 
 defineProps<{ roles: RoleRow[] }>();
 
-defineOptions({
-    layout: { breadcrumbs: [{ title: 'Peran', href: RoleController.index() }] },
-});
 </script>
 
 <template>

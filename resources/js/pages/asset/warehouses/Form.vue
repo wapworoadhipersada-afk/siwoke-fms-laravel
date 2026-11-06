@@ -17,12 +17,6 @@ const props = defineProps<{
     people: UlidOption[];
 }>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [{ title: 'Gudang', href: WarehouseController.index() }],
-    },
-});
-
 const form = computed(() =>
     props.warehouse
         ? WarehouseController.update.form(props.warehouse.ulid)
