@@ -17,6 +17,7 @@ Route::middleware(['web', 'auth', 'verified'])->prefix('iam')->name('iam.')->gro
     Route::delete('roles/{role}', [RoleController::class, 'destroy'])->whereNumber('role')->name('roles.destroy');
 
     Route::get('users', [UserController::class, 'index'])->name('users.index');
+    Route::get('engineers', [UserController::class, 'engineers'])->name('engineers.index');
     Route::get('users/create', [UserController::class, 'create'])->name('users.create');
     Route::post('users', [UserController::class, 'store'])->name('users.store');
     Route::get('users/{managedUser}/edit', [UserController::class, 'edit'])->name('users.edit');

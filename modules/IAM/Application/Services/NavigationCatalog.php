@@ -33,9 +33,14 @@ final class NavigationCatalog
 
             $group('master', 'Menu', 'Master Data', 'table'),
             $page('master.vendors', 'master', 'Menu', 'Vendor', 'master.vendors.index', 'table', Permissions::MASTER_VENDOR_VIEW),
-            $page('master.locations', 'master', 'Menu', 'Lokasi', 'master.locations.index', 'table', Permissions::MASTER_LOCATION_VIEW),
             $page('master.merchants', 'master', 'Menu', 'Merchant', 'master.merchants.index', 'table', Permissions::MASTER_MERCHANT_VIEW),
             $page('master.terminals', 'master', 'Menu', 'TID', 'master.terminals.index', 'table', Permissions::MASTER_TERMINAL_VIEW),
+            $page('master.documents', 'master', 'Menu', 'Dokumen', 'master.documents.index', 'file', Permissions::MASTER_TERMINAL_VIEW),
+
+            $group('locations', 'Menu', 'Lokasi', 'map'),
+            $page('locations.provinces', 'locations', 'Menu', 'Provinsi', 'master.provinces.index', 'map', Permissions::MASTER_LOCATION_VIEW),
+            $page('locations.service_points', 'locations', 'Menu', 'Service Point', 'master.service-points.index', 'map', Permissions::MASTER_LOCATION_VIEW),
+            $page('locations.areas', 'locations', 'Menu', 'Area Kelolaan', 'master.areas.index', 'map', Permissions::MASTER_LOCATION_VIEW),
 
             $group('assets', 'Menu', 'Aset', 'box'),
             $page('assets.list', 'assets', 'Menu', 'Aset', 'asset.assets.index', 'box', Permissions::ASSET_VIEW),
@@ -46,6 +51,8 @@ final class NavigationCatalog
 
             $group('access', 'Pengaturan', 'Pengguna dan akses', 'users'),
             $page('access.users', 'access', 'Pengaturan', 'Pengguna', 'iam.users.index', 'users', Permissions::IAM_USER_VIEW),
+            $page('access.engineers', 'access', 'Pengaturan', 'Engineer / Teknisi', 'iam.engineers.index', 'user', Permissions::IAM_USER_VIEW),
+            $page('access.team', 'access', 'Pengaturan', 'Tim', 'master.team.index', 'users', Permissions::IAM_USER_VIEW),
             $page('access.roles', 'access', 'Pengaturan', 'Peran', 'iam.roles.index', 'users', Permissions::IAM_ROLE_MANAGE),
             $page('access.menus', 'access', 'Pengaturan', 'Pengaturan menu', 'iam.navigation.index', 'gear', Permissions::IAM_ROLE_MANAGE),
 

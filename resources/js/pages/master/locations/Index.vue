@@ -11,39 +11,40 @@ import { Input } from '@/components/ui/input';
 import { useListFilters } from '@/composables/useListFilters';
 import type { LocationRow, Option, Paginator } from '@/types/master';
 
-defineOptions({
-    layout: {
-        breadcrumbs: [{ title: 'Lokasi', href: LocationController.index() }],
-    },
-});
 
 const props = defineProps<{
     locations: Paginator<LocationRow>;
     filters: { q: string; type: string };
     types: Option[];
+    fixedType: string | null;
     can: { manage: boolean };
 }>();
 
-const filters = useListFilters(LocationController.index.url(), {
+const slugs: Record<string, string> = { province: 'provinces', service_point: 'service-points', area: 'areas' };
+const names: Record<string, string> = { province: 'Provinsi', service_point: 'Service Point', area: 'Area Kelolaan' };
+const listUrl = props.fixedType ? `/master/${slugs[props.fixedType]}` : LocationController.index.url();
+const heading = props.fixedType ? names[props.fixedType] : 'Lokasi';
+
+const filters = useListFilters(listUrl, {
     q: props.filters.q,
     type: props.filters.type,
 });
 </script>
 
 <template>
-    <Head title="Lokasi" />
+    <Head :title="heading" />
 
     <div class="flex flex-1 flex-col gap-6 p-4">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
-                <h1 class="text-xl font-semibold tracking-tight">Lokasi</h1>
+                <h1 class="text-xl font-semibold tracking-tight">{{ heading }}</h1>
                 <p class="text-sm text-muted-foreground">
-                    Provinsi → Kota/Kabupaten → Area → Service Point. Anda hanya
+                    Provinsi → Service Point → Area Kelolaan. Anda hanya
                     melihat wilayah yang ditugaskan.
                 </p>
             </div>
             <Button v-if="can.manage" as-child>
-                <Link :href="LocationController.create()">Tambah lokasi</Link>
+                <Link :href="LocationController.create({ query: fixedType ? { type: fixedType } : {} })">Tambah {{ heading.toLowerCase() }}</Link>
             </Button>
         </div>
 
@@ -54,6 +55,7 @@ const filters = useListFilters(LocationController.index.url(), {
                 placeholder="Cari kode atau nama…"
             />
             <FormSelect
+                v-if="!fixedType"
                 v-model="filters.type"
                 :options="types"
                 placeholder="Semua tingkat"

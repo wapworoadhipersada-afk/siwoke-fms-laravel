@@ -26,10 +26,30 @@ final class LocationController extends MasterController
 
     public function index(Request $request): Response
     {
+        return $this->listing($request, null);
+    }
+
+    public function provinces(Request $request): Response
+    {
+        return $this->listing($request, LocationType::Province);
+    }
+
+    public function servicePoints(Request $request): Response
+    {
+        return $this->listing($request, LocationType::ServicePoint);
+    }
+
+    public function areas(Request $request): Response
+    {
+        return $this->listing($request, LocationType::Area);
+    }
+
+    private function listing(Request $request, ?LocationType $fixed): Response
+    {
         $this->allow(Permissions::MASTER_LOCATION_VIEW);
 
         $search = trim((string) $request->query('q'));
-        $type = LocationType::tryFrom((string) $request->query('type'));
+        $type = $fixed ?? LocationType::tryFrom((string) $request->query('type'));
 
         $focused = app(VendorAccess::class)->focusedId($this->user());
 
@@ -59,17 +79,20 @@ final class LocationController extends MasterController
         return Inertia::render('master/locations/Index', [
             'locations' => $locations,
             'filters' => ['q' => $search, 'type' => $type instanceof LocationType ? $type->value : ''],
+            'fixedType' => $fixed?->value,
+            'sectionTitle' => $fixed === null ? 'Lokasi' : $fixed->label(),
             'types' => $this->typeOptions(),
             'can' => ['manage' => $this->user()->can(Permissions::MASTER_LOCATION_MANAGE)],
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
         $this->allow(Permissions::MASTER_LOCATION_MANAGE);
 
         return Inertia::render('master/locations/Form', [
             'location' => null,
+            'presetType' => LocationType::tryFrom((string) $request->query('type'))?->value,
             'types' => $this->typeOptions(),
             'parentOptions' => $this->parentOptions(),
             'vendors' => $this->vendorOptions(),

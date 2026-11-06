@@ -61,6 +61,13 @@ const trail = computed((): BreadcrumbItem[] => {
         ...props.breadcrumbs,
     ];
 
+    // A page whose section name depends on the data (one list serving two menus) names it itself.
+    const section = page.props.sectionTitle;
+
+    if (props.breadcrumbs.length === 0 && typeof section === 'string') {
+        items.push({ title: section, href: page.url.split('?')[0] });
+    }
+
     if (currentPageLabel.value !== null) {
         items.push({ title: currentPageLabel.value, href: page.url });
     }

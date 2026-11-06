@@ -12,6 +12,7 @@ import type { LocationForm, Option, UlidOption } from '@/types/master';
 
 const props = defineProps<{
     location: LocationForm | null;
+    presetType?: string | null;
     types: Option[];
     parentOptions: Record<string, UlidOption[]>;
     vendors: UlidOption[];
@@ -30,7 +31,7 @@ const parentTypeOf: Record<string, string | null> = {
     area: 'service_point',
 };
 
-const type = ref(props.location?.type ?? props.types[0]?.value ?? 'province');
+const type = ref(props.location?.type ?? props.presetType ?? props.types[0]?.value ?? 'province');
 const parentType = computed(() => parentTypeOf[type.value] ?? null);
 const parents = computed(() =>
     parentType.value

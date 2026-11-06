@@ -27,14 +27,33 @@ final class UserController extends ModuleController
 {
     public function index(Request $request): Response
     {
+        return $this->listing($request, false);
+    }
+
+    public function engineers(Request $request): Response
+    {
+        return $this->listing($request, true);
+    }
+
+    private function listing(Request $request, bool $field): Response
+    {
         $this->allow(Permissions::IAM_USER_VIEW);
 
         $search = trim((string) $request->query('q'));
         $role = trim((string) $request->query('role'));
         $viewer = $this->user();
+        $fieldRoles = [RoleName::Leader->value, RoleName::Technician->value];
 
         $users = User::query()
             ->with('roles')
+            // Office accounts and field accounts (leaders and engineers) have separate menus.
+            ->where(function ($query) use ($field, $fieldRoles): void {
+                if ($field) {
+                    $query->whereHas('roles', fn ($inner) => $inner->whereIn('name', $fieldRoles))->orWhere('user_type', UserType::Technician->value);
+                } else {
+                    $query->whereDoesntHave('roles', fn ($inner) => $inner->whereIn('name', $fieldRoles))->where('user_type', '!=', UserType::Technician->value);
+                }
+            })
             ->when($search !== '', fn ($query) => $query->where(fn ($query) => $query
                 ->where('name', 'ilike', '%'.addcslashes($search, '%_\\').'%')
                 ->orWhere('email', 'ilike', '%'.addcslashes($search, '%_\\').'%')
@@ -59,7 +78,9 @@ final class UserController extends ModuleController
         return Inertia::render('iam/users/Index', [
             'users' => $users,
             'filters' => ['q' => $search, 'role' => $role],
-            'roles' => $this->roleOptions(),
+            'field' => $field,
+            'sectionTitle' => $field ? 'Engineer / Teknisi' : 'Pengguna',
+            'roles' => collect($this->roleOptions())->filter(fn (array $option): bool => in_array($option['name'], $fieldRoles, true) === $field)->values()->all(),
             'can' => [
                 'create' => $viewer->can(Permissions::IAM_USER_CREATE),
                 'update' => $viewer->can(Permissions::IAM_USER_UPDATE),

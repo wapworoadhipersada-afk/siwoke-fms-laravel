@@ -13,28 +13,34 @@ import type { RoleOption, UserRow } from '@/types/iam';
 const props = defineProps<{
     users: Paginator<UserRow>;
     filters: { q: string; role: string };
+    field: boolean;
     roles: RoleOption[];
     can: { create: boolean; update: boolean };
 }>();
 
+const listUrl = props.field ? '/iam/engineers' : UserController.index.url();
+const heading = props.field ? 'Engineer / Teknisi' : 'Pengguna';
+
 defineOptions({
-    layout: { breadcrumbs: [{ title: 'Pengguna', href: UserController.index() }] },
+    layout: { breadcrumbs: [] },
 });
 
-const filters = useListFilters(UserController.index.url(), { ...props.filters });
+const filters = useListFilters(listUrl, { ...props.filters });
 </script>
 
 <template>
-    <Head title="Pengguna" />
+    <Head :title="heading" />
 
     <div class="flex flex-1 flex-col gap-6 p-4">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
-                <h1 class="text-xl font-semibold text-foreground">Pengguna</h1>
-                <p class="text-sm text-muted-foreground">Staf kantor dan teknisi, beserta peran yang mereka pegang.</p>
+                <h1 class="text-xl font-semibold text-foreground">{{ heading }}</h1>
+                <p class="text-sm text-muted-foreground">
+                    {{ field ? 'Leader dan teknisi lapangan: kode, area, vendor, dan peran.' : 'Akun kantor: admin, koordinator, managerial. Leader dan teknisi ada di menu Engineer / Teknisi.' }}
+                </p>
             </div>
             <Button v-if="can.create" as-child>
-                <Link :href="UserController.create()">Tambah pengguna</Link>
+                <Link :href="UserController.create()">{{ field ? 'Tambah engineer' : 'Tambah pengguna' }}</Link>
             </Button>
         </div>
 

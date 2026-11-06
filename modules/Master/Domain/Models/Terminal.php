@@ -28,11 +28,13 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property int $merchant_site_id
  * @property string $tid
  * @property TerminalStatus $status
+ * @property string|null $note
+ * @property int|null $merchant_document_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  */
-#[Fillable(['vendor_id', 'merchant_id', 'merchant_site_id', 'tid', 'status'])]
+#[Fillable(['vendor_id', 'merchant_id', 'merchant_site_id', 'tid', 'status', 'note', 'merchant_document_id'])]
 class Terminal extends Model
 {
     use HasPublicUlid, LogsActivity, SoftDeletes;
