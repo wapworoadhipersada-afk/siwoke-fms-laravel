@@ -21,16 +21,26 @@ use Spatie\Permission\Models\Role;
  * @property string $section
  * @property string $label
  * @property string|null $route_name
+ * @property string|null $url
  * @property string|null $icon
  * @property string|null $permission_name
  * @property int $sort_order
  * @property bool $is_active
+ * @property bool $is_custom
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['parent_id', 'key', 'section', 'label', 'route_name', 'icon', 'permission_name', 'sort_order', 'is_active'])]
+#[Fillable(['parent_id', 'key', 'section', 'label', 'route_name', 'url', 'icon', 'permission_name', 'sort_order', 'is_active', 'is_custom'])]
 final class NavigationMenu extends Model
 {
+    /**
+     * A group leads nowhere itself; it only holds pages.
+     */
+    public function isGroup(): bool
+    {
+        return $this->route_name === null && $this->url === null;
+    }
+
     /**
      * @return BelongsTo<self, $this>
      */
@@ -64,6 +74,7 @@ final class NavigationMenu extends Model
     {
         return [
             'is_active' => 'boolean',
+            'is_custom' => 'boolean',
             'sort_order' => 'integer',
         ];
     }

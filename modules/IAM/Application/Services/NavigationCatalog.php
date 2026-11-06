@@ -53,8 +53,8 @@ final class NavigationCatalog
             $page('access.users', 'access', 'Pengaturan', 'Pengguna', 'iam.users.index', 'users', Permissions::IAM_USER_VIEW),
             $page('access.engineers', 'access', 'Pengaturan', 'Engineer / Teknisi', 'iam.engineers.index', 'user', Permissions::IAM_USER_VIEW),
             $page('access.team', 'access', 'Pengaturan', 'Tim', 'master.team.index', 'users', Permissions::IAM_USER_VIEW),
-            $page('access.roles', 'access', 'Pengaturan', 'Peran', 'iam.roles.index', 'users', Permissions::IAM_ROLE_MANAGE),
-            $page('access.menus', 'access', 'Pengaturan', 'Pengaturan menu', 'iam.navigation.index', 'gear', Permissions::IAM_ROLE_MANAGE),
+
+            $page('settings', null, 'Pengaturan', 'Pengaturan', 'iam.settings.index', 'gear', Permissions::IAM_ROLE_MANAGE),
 
             $group('integration', 'Integrasi', 'Vendor API', 'plug'),
             $page('integration.clients', 'integration', 'Integrasi', 'Klien integrasi', 'integration.clients.index', 'plug', Permissions::INTEGRATION_CLIENT_MANAGE),

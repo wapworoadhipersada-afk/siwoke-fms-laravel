@@ -181,6 +181,11 @@ final class NavigationMenuService
                 continue;
             }
 
+            // An address that is not a plain path inside this application is never rendered as a link.
+            if ($menu->url !== null && ! NavigationUrl::isSafe($menu->url)) {
+                continue;
+            }
+
             $own = $rows->filter(static fn (stdClass $row): bool => (bool) $row->is_visible)->pluck('sort_order')->map(static fn (mixed $order): int => (int) $order)->min();
 
             $visible[$menu->id] = [
@@ -190,7 +195,7 @@ final class NavigationMenuService
                 'section' => $menu->section,
                 'label' => $menu->label,
                 'icon' => $menu->icon,
-                'href' => $menu->route_name === null ? null : route($menu->route_name, absolute: false),
+                'href' => $menu->route_name !== null ? route($menu->route_name, absolute: false) : $menu->url,
                 'order' => $own ?? $menu->sort_order,
             ];
         }
