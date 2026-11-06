@@ -60,7 +60,7 @@ describe('merchants and sites', function () {
         Fx::merchant($bri, 'm001');
     })->throws(ValidationException::class);
 
-    it('attaches a site only to a service point', function (string $level) {
+    it('attaches a site only to a managed area', function (string $level) {
         $chain = Fx::chain();
 
         app(CreateMerchantSite::class)->handle([
@@ -68,11 +68,11 @@ describe('merchants and sites', function () {
             'location_id' => $chain[$level]->id,
             'address' => 'Jl. Salah Level',
         ]);
-    })->with(['province', 'city', 'area'])->throws(ValidationException::class, 'Service Point');
+    })->with(['province', 'service_point'])->throws(ValidationException::class, 'Area Kelolaan');
 
     it('moves a site to another service point', function () {
-        $first = Fx::chain()['service_point'];
-        $second = Fx::chain()['service_point'];
+        $first = Fx::chain()['area'];
+        $second = Fx::chain()['area'];
         $site = Fx::site(Fx::merchant(Fx::vendor()), $first);
 
         app(UpdateMerchantSite::class)->handle($site, ['location_id' => $second->id]);
@@ -81,14 +81,14 @@ describe('merchants and sites', function () {
     });
 
     it('rejects out-of-range coordinates at the database level', function () {
-        $site = Fx::site(Fx::merchant(Fx::vendor()), Fx::chain()['service_point']);
+        $site = Fx::site(Fx::merchant(Fx::vendor()), Fx::chain()['area']);
 
         MerchantSite::query()->whereKey($site->id)->update(['latitude' => 123.4]);
     })->throws(QueryException::class);
 
     it('soft-deletes its sites together with the merchant', function () {
         $merchant = Fx::merchant(Fx::vendor());
-        $site = Fx::site($merchant, Fx::chain()['service_point']);
+        $site = Fx::site($merchant, Fx::chain()['area']);
 
         app(DeleteMerchant::class)->handle($merchant);
 
@@ -97,7 +97,7 @@ describe('merchants and sites', function () {
     });
 
     it('cannot delete a merchant or site that still has a terminal', function () {
-        $site = Fx::site($merchant = Fx::merchant(Fx::vendor()), Fx::chain()['service_point']);
+        $site = Fx::site($merchant = Fx::merchant(Fx::vendor()), Fx::chain()['area']);
         Fx::terminal($site);
 
         expect(fn () => app(DeleteMerchant::class)->handle($merchant))->toThrow(ValidationException::class)
@@ -109,7 +109,7 @@ describe('terminals', function () {
     it('derives vendor and merchant from the site', function () {
         $vendor = Fx::vendor();
         $merchant = Fx::merchant($vendor);
-        $site = Fx::site($merchant, Fx::chain()['service_point']);
+        $site = Fx::site($merchant, Fx::chain()['area']);
 
         $terminal = Fx::terminal($site, ' tid001 ');
 
@@ -121,7 +121,7 @@ describe('terminals', function () {
     });
 
     it('allows the same TID at different vendors but not twice at one', function () {
-        $sp = Fx::chain()['service_point'];
+        $sp = Fx::chain()['area'];
         Fx::terminalIn(Fx::vendor('BRI'), $sp)->update(['tid' => 'TID777']);
         $cimbTerminal = Fx::terminalIn(Fx::vendor('CIMB'), $sp);
 
@@ -134,7 +134,7 @@ describe('terminals', function () {
     })->throws(ValidationException::class);
 
     it('frees the TID once the terminal is soft-deleted', function () {
-        $site = Fx::site(Fx::merchant(Fx::vendor()), Fx::chain()['service_point']);
+        $site = Fx::site(Fx::merchant(Fx::vendor()), Fx::chain()['area']);
         $terminal = Fx::terminal($site, 'TID900');
         $terminal->delete();
 
@@ -145,7 +145,7 @@ describe('terminals', function () {
 
     it('moves to a site of another merchant of the same vendor', function () {
         $vendor = Fx::vendor();
-        $sp = Fx::chain()['service_point'];
+        $sp = Fx::chain()['area'];
         $terminal = Fx::terminalIn($vendor, $sp);
         $otherMerchant = Fx::merchant($vendor);
         $otherSite = Fx::site($otherMerchant, $sp);
@@ -157,7 +157,7 @@ describe('terminals', function () {
     });
 
     it('refuses to move to a site that belongs to another vendor', function () {
-        $sp = Fx::chain()['service_point'];
+        $sp = Fx::chain()['area'];
         $terminal = Fx::terminalIn(Fx::vendor('BRI'), $sp);
         $foreignSite = Fx::site(Fx::merchant(Fx::vendor('CIMB')), $sp);
 
@@ -165,7 +165,7 @@ describe('terminals', function () {
     })->throws(ValidationException::class, 'vendor lain');
 
     it('changes status', function () {
-        $terminal = Fx::terminalIn(Fx::vendor(), Fx::chain()['service_point']);
+        $terminal = Fx::terminalIn(Fx::vendor(), Fx::chain()['area']);
 
         app(UpdateTerminal::class)->handle($terminal, ['status' => TerminalStatus::Removed]);
 
@@ -173,7 +173,7 @@ describe('terminals', function () {
     });
 
     it('cannot be filed under a merchant of another vendor, even by raw SQL', function () {
-        $sp = Fx::chain()['service_point'];
+        $sp = Fx::chain()['area'];
         $bri = Fx::vendor('BRI');
         $foreignMerchant = Fx::merchant(Fx::vendor('CIMB'));
         $foreignSite = Fx::site($foreignMerchant, $sp);
@@ -189,7 +189,7 @@ describe('terminals', function () {
     })->throws(QueryException::class);
 
     it('cannot point at a site of a different merchant, even by raw SQL', function () {
-        $sp = Fx::chain()['service_point'];
+        $sp = Fx::chain()['area'];
         $vendor = Fx::vendor();
         $merchantA = Fx::merchant($vendor);
         $siteOfB = Fx::site(Fx::merchant($vendor), $sp);
@@ -205,7 +205,7 @@ describe('terminals', function () {
     })->throws(QueryException::class);
 
     it('rejects an unknown status at the database level', function () {
-        $terminal = Fx::terminalIn(Fx::vendor(), Fx::chain()['service_point']);
+        $terminal = Fx::terminalIn(Fx::vendor(), Fx::chain()['area']);
 
         DB::table('terminals')->where('id', $terminal->id)->update(['status' => 'stolen']);
     })->throws(QueryException::class);
@@ -215,7 +215,7 @@ describe('terminals', function () {
     })->throws(ValidationException::class);
 
     it('audits creation and changes in the master log', function () {
-        $terminal = Fx::terminalIn(Fx::vendor(), Fx::chain()['service_point']);
+        $terminal = Fx::terminalIn(Fx::vendor(), Fx::chain()['area']);
         app(UpdateTerminal::class)->handle($terminal, ['status' => TerminalStatus::Inactive]);
 
         $events = Activity::query()
@@ -231,6 +231,6 @@ describe('terminals', function () {
 });
 
 it('creates locations with the type enum available for tests', function () {
-    expect(LocationType::ServicePoint->depth())->toBe(4)
+    expect(LocationType::Area->depth())->toBe(3)
         ->and(LocationType::Province->parentType())->toBeNull();
 });

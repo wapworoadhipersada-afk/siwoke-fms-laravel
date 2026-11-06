@@ -313,7 +313,7 @@ describe('user screens', function () {
 describe('working areas', function () {
     it('are set from their own screen and open the data to that person', function () {
         $target = app(SaveUser::class)->handle(null, userData(['roles' => [RoleName::OperationalAdmin->value]]), $this->admin)['user'];
-        $area = MasterFixtures::chain()['service_point'];
+        $area = MasterFixtures::chain()['area'];
 
         $this->actingAs($this->admin)->get(route('master.user-scopes.edit', $target->ulid))->assertOk()
             ->assertInertia(fn ($page) => $page->component('master/user-scopes/Edit')->has('locations')->where('assigned', []));

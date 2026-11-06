@@ -58,7 +58,7 @@ final class TicketFixtures
 
     public static function terminal(string $vendorCode = 'BRI', ?Location $servicePoint = null): Terminal
     {
-        return MasterFixtures::terminalIn(MasterFixtures::vendor($vendorCode.'-'.++self::$sequence), $servicePoint ?? MasterFixtures::chain()['service_point']);
+        return MasterFixtures::terminalIn(MasterFixtures::vendor($vendorCode.'-'.++self::$sequence), $servicePoint ?? MasterFixtures::chain()['area']);
     }
 
     public static function type(string $code = 'MAINTENANCE'): TicketType

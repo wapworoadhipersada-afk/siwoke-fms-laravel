@@ -56,20 +56,20 @@ const options = computed(() =>
             v-slot="{ errors, processing }"
         >
             <div class="grid gap-2">
-                <Label for="location">Service Point</Label>
+                <Label for="location">Area Kelolaan</Label>
                 <FormSelect
                     id="location"
                     name="location"
                     :options="options"
                     :default-value="site?.location ?? ''"
-                    placeholder="Pilih Service Point…"
+                    placeholder="Pilih Area Kelolaan…"
                     required
                 />
                 <p
                     v-if="options.length === 0"
                     class="text-sm text-muted-foreground"
                 >
-                    Belum ada Service Point yang dapat Anda akses.
+                    Belum ada Area Kelolaan untuk vendor ini yang dapat Anda akses.
                 </p>
                 <InputError :message="errors.location" />
             </div>

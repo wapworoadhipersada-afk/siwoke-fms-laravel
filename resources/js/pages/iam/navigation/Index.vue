@@ -5,6 +5,7 @@ import NavigationController from '@/actions/Modules/IAM/Http/Web/Controllers/Nav
 import MenuEditDialog from '@/components/iam/MenuEditDialog.vue';
 import { Button } from '@/components/ui/button';
 import { ArrowDown as ArrowDownIcon, ArrowUp as ArrowUpIcon } from '@lucide/vue';
+import { routeArg } from '@/lib/routeArg';
 import type { NavSection } from '@/types';
 import type { AuditEntry, MenuEntry, MenuSetting } from '@/types/iam';
 
@@ -96,7 +97,7 @@ const save = (): void => {
     }
 
     router.put(
-        NavigationController.syncRole.url(String(props.selectedRole)),
+        NavigationController.syncRole.url(routeArg(props.selectedRole)),
         { items: local.value.map((item) => ({ menu_id: item.id, is_visible: item.visible, sort_order: item.sort_order })) },
         { preserveScroll: true, onStart: () => (saving.value = true), onFinish: () => (saving.value = false) },
     );
@@ -115,7 +116,7 @@ const formatDate = (value: string | null): string => (value ? new Date(value).to
 <template>
     <Head title="Pengaturan menu" />
 
-    <div class="flex flex-1 flex-col gap-6">
+    <div class="flex flex-1 flex-col gap-6 p-4">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
                 <h1 class="text-xl font-semibold text-foreground">Pengaturan menu</h1>

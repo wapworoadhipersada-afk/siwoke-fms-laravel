@@ -289,7 +289,7 @@ describe('downloading', function () {
     it('answers 404 to an office user whose area does not include the ticket', function () {
         $ticket = finishedTicket($this);
         $report = app(GenerateBeritaAcara::class)->handle(visitOf($ticket));
-        $elsewhere = Fx::scopedDispatcher([MasterFixtures::chain()['service_point']]);
+        $elsewhere = Fx::scopedDispatcher([MasterFixtures::chain()['area']]);
 
         $this->actingAs($elsewhere)->get(route('tickets.berita-acara.download', [$ticket, $report]))->assertNotFound();
     });

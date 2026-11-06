@@ -43,7 +43,9 @@ export type TicketDetail = {
     merchant: { ulid: string; name: string; phone: string | null };
     site: {
         address: string;
-        service_point: string;
+        area: string;
+        service_point: string | null;
+        province: string | null;
         pic_name: string | null;
         pic_phone: string | null;
         latitude: string | null;

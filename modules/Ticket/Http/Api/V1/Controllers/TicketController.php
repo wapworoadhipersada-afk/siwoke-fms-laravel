@@ -47,7 +47,7 @@ final class TicketController extends Controller
     {
         $user = $this->technician($request);
 
-        $query = Ticket::query()->with(['type', 'vendor', 'terminal', 'site.location', 'site.merchant']);
+        $query = Ticket::query()->with(['type', 'vendor', 'terminal', 'site.location.parent', 'site.merchant']);
 
         if ($request->query('scope') === 'history') {
             $query->whereHas('visits', fn ($visits) => $visits->where('technician_id', $user->id)->whereNotNull('outcome'))
@@ -198,7 +198,7 @@ final class TicketController extends Controller
      */
     private function payload(Ticket $ticket, User $user): array
     {
-        $ticket->loadMissing(['type', 'vendor', 'terminal', 'site.location', 'site.merchant']);
+        $ticket->loadMissing(['type', 'vendor', 'terminal', 'site.location.parent', 'site.merchant']);
 
         $visit = TicketVisit::query()->where('ticket_id', $ticket->id)->where('technician_id', $user->id)->orderByDesc('visit_no')->first();
         $site = $ticket->site;
@@ -228,7 +228,8 @@ final class TicketController extends Controller
                 'longitude' => $site->longitude,
                 'pic_name' => $site->pic_name,
                 'pic_phone' => $site->pic_phone,
-                'service_point' => $site->location->name,
+                'area' => $site->location->name,
+                'service_point' => $site->location->parent?->name,
             ],
             'visit' => $visit instanceof TicketVisit ? [
                 'visit_no' => $visit->visit_no,

@@ -17,6 +17,7 @@ use Modules\Asset\Domain\Enums\AssetCondition;
 use Modules\Asset\Domain\Enums\AssetStatus;
 use Modules\Asset\Domain\Enums\HolderType;
 use Modules\Asset\Domain\ValueObjects\Holder;
+use Modules\Master\Application\Services\VendorAccess;
 use Modules\Master\Domain\Models\Vendor;
 use Modules\Shared\Domain\Concerns\HasPublicUlid;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
@@ -99,6 +100,8 @@ class Asset extends Model
      */
     public function scopeVisibleTo(Builder $query, User $user): Builder
     {
+        $query = app(VendorAccess::class)->constrain($query, $user, 'assets.owner_vendor_id');
+
         return app(HolderVisibility::class)->constrain($query, $user, 'assets.holder_type', 'assets.holder_id');
     }
 

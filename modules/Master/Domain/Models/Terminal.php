@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Modules\Master\Application\Services\VendorAccess;
 use Modules\Master\Domain\Enums\TerminalStatus;
 use Modules\Shared\Domain\Concerns\HasPublicUlid;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
@@ -73,7 +74,8 @@ class Terminal extends Model
      */
     public function scopeVisibleTo(Builder $query, User $user): Builder
     {
-        return $query->whereIn('terminals.merchant_site_id', MerchantSite::query()->visibleTo($user)->select('merchant_sites.id'));
+        return app(VendorAccess::class)->constrain($query, $user, 'terminals.vendor_id')
+            ->whereIn('terminals.merchant_site_id', MerchantSite::query()->visibleTo($user)->select('merchant_sites.id'));
     }
 
     public function getActivitylogOptions(): LogOptions

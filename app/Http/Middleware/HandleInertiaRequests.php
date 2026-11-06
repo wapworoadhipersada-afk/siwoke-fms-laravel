@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Modules\IAM\Application\Services\NavigationMenuService;
+use Modules\Master\Application\Services\VendorAccess;
+use Modules\Master\Domain\Models\Vendor;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -47,7 +49,25 @@ class HandleInertiaRequests extends Middleware
             ],
             // The sidebar, already filtered for this person's roles and permissions (see NavigationMenuService).
             'navigation' => fn (): array => $request->user() instanceof User ? app(NavigationMenuService::class)->forUser($request->user()) : [],
+            // The vendor switcher in the header: what the person may choose from, and what is chosen now.
+            'vendorFocus' => fn (): array => $request->user() instanceof User ? $this->vendorFocus($request->user()) : ['current' => null, 'options' => []],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+        ];
+    }
+
+    /**
+     * @return array{current: string|null, options: array<int, array{ulid: string, code: string, name: string}>}
+     */
+    private function vendorFocus(User $user): array
+    {
+        $access = app(VendorAccess::class);
+        $ids = $access->selectableIds($user);
+        $vendors = Vendor::query()->whereIn('id', $ids)->orderBy('name')->get();
+        $focused = $access->focusedId($user);
+
+        return [
+            'current' => $focused === null ? null : $vendors->firstWhere('id', $focused)?->ulid,
+            'options' => $vendors->map(fn (Vendor $vendor): array => ['ulid' => $vendor->ulid, 'code' => $vendor->code, 'name' => $vendor->name])->values()->all(),
         ];
     }
 }

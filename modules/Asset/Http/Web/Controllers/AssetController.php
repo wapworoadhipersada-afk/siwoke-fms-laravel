@@ -27,6 +27,7 @@ use Modules\Asset\Domain\ValueObjects\Holder;
 use Modules\Asset\Http\Web\Requests\MoveAssetRequest;
 use Modules\Asset\Http\Web\Requests\ReceiveAssetsRequest;
 use Modules\IAM\Domain\Permissions;
+use Modules\Master\Application\Services\VendorAccess;
 use Modules\Master\Domain\Models\Vendor;
 use Modules\Shared\Http\ModuleController;
 
@@ -45,6 +46,7 @@ final class AssetController extends ModuleController
 
         $page = Asset::query()
             ->visibleTo($this->user())
+            ->tap(fn ($focused) => app(VendorAccess::class)->focus($focused, $this->user(), 'assets.owner_vendor_id'))
             ->with(['model.category', 'vendor'])
             ->when($status instanceof AssetStatus, fn ($query) => $query->where('assets.status', $status?->value))
             ->when($vendor !== '', fn ($query) => $query->whereHas('vendor', fn ($query) => $query->where('ulid', $vendor)))

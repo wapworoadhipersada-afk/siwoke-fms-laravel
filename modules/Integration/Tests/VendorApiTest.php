@@ -202,7 +202,7 @@ describe('opening and following tickets', function () {
     it('calls it a clash when the same number is sent for a different TID', function () {
         $body = ticketBody($this);
         signed($this, 'POST', VENDOR_TICKETS, $body)->assertCreated();
-        $other = MasterFixtures::terminalIn($this->vendor, MasterFixtures::chain()['service_point']);
+        $other = MasterFixtures::terminalIn($this->vendor, MasterFixtures::chain()['area']);
 
         signed($this, 'POST', VENDOR_TICKETS, [...$body, 'tid' => $other->tid])->assertStatus(409)->assertJsonPath('code', 'vendor_ticket_conflict');
     });

@@ -206,7 +206,7 @@ describe('what may be noted', function () {
     it('refuses to pull out a machine that stands at another TID', function () {
         $elsewhere = carried($this, Fx::technician());
         $owner = User::query()->findOrFail($elsewhere->holder_id);
-        $other = MasterFixtures::terminalIn($this->vendor, MasterFixtures::chain()['service_point']);
+        $other = MasterFixtures::terminalIn($this->vendor, MasterFixtures::chain()['area']);
         app(MoveAssets::class)->handle(new MovementCommand(MovementType::Install, [MoveItem::asset($elsewhere)], Holder::user($owner), Holder::terminal($other), $owner));
         $ticket = workingOn($this, 'PULLOUT');
 

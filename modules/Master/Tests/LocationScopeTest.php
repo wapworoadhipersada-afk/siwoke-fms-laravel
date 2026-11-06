@@ -23,8 +23,8 @@ beforeEach(function () {
     $vendor = Fx::vendor();
     $this->west = Fx::chain();
     $this->east = Fx::chain();
-    $this->westTerminal = Fx::terminalIn($vendor, $this->west['service_point']);
-    $this->eastTerminal = Fx::terminalIn($vendor, $this->east['service_point']);
+    $this->westTerminal = Fx::terminalIn($vendor, $this->west['area']);
+    $this->eastTerminal = Fx::terminalIn($vendor, $this->east['area']);
 });
 
 function scopedUser(RoleName $role, array $locations = []): User
@@ -49,16 +49,16 @@ it('lets a user see only the subtree assigned to them', function () {
 });
 
 it('treats a lower assignment as that branch only', function () {
-    $user = scopedUser(RoleName::Leader, [$this->west['area']]);
+    $user = scopedUser(RoleName::Leader, [$this->west['service_point']]);
 
     $visible = Location::query()->visibleTo($user)->pluck('id')->all();
 
-    expect($visible)->toEqualCanonicalizing([$this->west['area']->id, $this->west['service_point']->id])
-        ->and($visible)->not->toContain($this->west['city']->id, $this->west['province']->id);
+    expect($visible)->toEqualCanonicalizing([$this->west['service_point']->id, $this->west['area']->id])
+        ->and($visible)->not->toContain($this->west['province']->id);
 });
 
 it('combines several assignments', function () {
-    $user = scopedUser(RoleName::Leader, [$this->west['city'], $this->east['city']]);
+    $user = scopedUser(RoleName::Leader, [$this->west['service_point'], $this->east['service_point']]);
 
     expect(Terminal::query()->visibleTo($user)->count())->toBe(2);
 });
@@ -74,7 +74,7 @@ it('shows nothing to a user with no assignment', function () {
 it('shows everything to roles that hold the all-areas permission', function (RoleName $role) {
     $user = User::factory()->create()->assignRole($role->value);
 
-    expect(Location::query()->visibleTo($user)->count())->toBe(8)
+    expect(Location::query()->visibleTo($user)->count())->toBe(6)
         ->and(Terminal::query()->visibleTo($user)->count())->toBe(2);
 })->with([RoleName::SuperAdmin, RoleName::Managerial]);
 
@@ -87,12 +87,12 @@ it('ignores an assignment pointing at a deleted location', function () {
 });
 
 it('answers whether a user may access a given location', function () {
-    $user = scopedUser(RoleName::Coordinator, [$this->west['city']]);
+    $user = scopedUser(RoleName::Coordinator, [$this->west['service_point']]);
     $access = app(LocationAccess::class);
 
-    expect($access->canAccess($user, $this->west['service_point']->fresh()))->toBeTrue()
+    expect($access->canAccess($user, $this->west['area']->fresh()))->toBeTrue()
         ->and($access->canAccess($user, $this->west['province']->fresh()))->toBeFalse()
-        ->and($access->canAccess($user, $this->east['service_point']->fresh()))->toBeFalse();
+        ->and($access->canAccess($user, $this->east['area']->fresh()))->toBeFalse();
 });
 
 it('replaces the assignments and audits the change', function () {

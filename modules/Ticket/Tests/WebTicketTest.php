@@ -45,8 +45,8 @@ describe('access control', function () {
         $west = MasterFixtures::chain();
         $east = MasterFixtures::chain();
         $regional = Fx::scopedDispatcher([$west['province']]);
-        $own = Fx::ticket(Fx::terminal('W', $west['service_point']));
-        $foreign = Fx::ticket(Fx::terminal('E', $east['service_point']));
+        $own = Fx::ticket(Fx::terminal('W', $west['area']));
+        $foreign = Fx::ticket(Fx::terminal('E', $east['area']));
 
         $this->actingAs($regional)->get("/tickets/{$own->ulid}")->assertOk();
         $this->actingAs($regional)->get("/tickets/{$foreign->ulid}")->assertNotFound();

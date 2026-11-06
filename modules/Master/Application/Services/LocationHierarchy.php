@@ -9,7 +9,7 @@ use Modules\Master\Domain\Enums\LocationType;
 use Modules\Master\Domain\Models\Location;
 
 /**
- * Enforces Province → City → Area → Service Point: every node sits directly under its own parent type.
+ * Enforces Province → Service Point → Area Kelolaan: every node sits directly under its own parent type.
  */
 final class LocationHierarchy
 {

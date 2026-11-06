@@ -78,8 +78,8 @@ describe('dashboard', function () {
     });
 
     it('shows each person only the tickets of their own area', function () {
-        $mine = MasterFixtures::chain()['service_point'];
-        $theirs = MasterFixtures::chain('OTHER')['service_point'];
+        $mine = MasterFixtures::chain()['area'];
+        $theirs = MasterFixtures::chain()['area'];
         Fx::ticket(Fx::terminal('MINE', $mine));
         Fx::ticket(Fx::terminal('THEIRS', $theirs));
         $scoped = Fx::scopedDispatcher([$mine]);
@@ -128,9 +128,9 @@ describe('ticket report', function () {
     });
 
     it('never shows tickets outside the viewer\'s area', function () {
-        $mine = MasterFixtures::chain()['service_point'];
+        $mine = MasterFixtures::chain()['area'];
         Fx::ticket(Fx::terminal('MINE', $mine));
-        Fx::ticket(Fx::terminal('THEIRS', MasterFixtures::chain('OTHER')['service_point']));
+        Fx::ticket(Fx::terminal('THEIRS', MasterFixtures::chain()['area']));
 
         $this->actingAs(Fx::scopedDispatcher([$mine]))->get(route('reports.tickets'))->assertOk()
             ->assertInertia(fn ($page) => $page->has('tickets.data', 1));

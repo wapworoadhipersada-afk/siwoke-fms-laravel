@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Modules\Asset\Application\Services\HolderVisibility;
 use Modules\Asset\Domain\Enums\HolderType;
+use Modules\Master\Application\Services\VendorAccess;
 use Modules\Master\Domain\Models\Vendor;
 
 /**
@@ -52,6 +53,8 @@ class AssetStock extends Model
      */
     public function scopeVisibleTo(Builder $query, User $user): Builder
     {
+        $query = app(VendorAccess::class)->constrain($query, $user, 'asset_stocks.owner_vendor_id');
+
         return app(HolderVisibility::class)->constrain($query, $user, 'asset_stocks.holder_type', 'asset_stocks.holder_id');
     }
 

@@ -14,6 +14,7 @@ const props = defineProps<{
     location: LocationForm | null;
     types: Option[];
     parentOptions: Record<string, UlidOption[]>;
+    vendors: UlidOption[];
 }>();
 
 defineOptions({
@@ -25,9 +26,8 @@ defineOptions({
 // What a node of each type must sit under; the hierarchy is fixed.
 const parentTypeOf: Record<string, string | null> = {
     province: null,
-    city: 'province',
-    area: 'city',
-    service_point: 'area',
+    service_point: 'province',
+    area: 'service_point',
 };
 
 const type = ref(props.location?.type ?? props.types[0]?.value ?? 'province');
@@ -42,6 +42,11 @@ const parents = computed(() =>
 );
 const parentLabel = computed(
     () => props.types.find((item) => item.value === parentType.value)?.label,
+);
+
+// Only a service point chooses a vendor; an area follows its service point and a province has none.
+const vendorOptions = computed(() =>
+    props.vendors.map((vendor) => ({ value: vendor.ulid, label: vendor.label })),
 );
 
 const form = computed(() =>
@@ -105,8 +110,23 @@ const title = computed(() =>
                 <InputError :message="errors.parent" />
             </div>
 
+            <div v-if="type === 'service_point'" class="grid gap-2">
+                <Label for="vendor">Vendor</Label>
+                <FormSelect
+                    id="vendor"
+                    name="vendor"
+                    :options="vendorOptions"
+                    :default-value="location?.vendor ?? ''"
+                    placeholder="Semua vendor (dipakai bersama)"
+                />
+                <p class="text-sm text-muted-foreground">
+                    Area Kelolaan di bawah service point ini otomatis ikut vendor yang dipilih. Kosongkan bila dipakai bersama semua vendor.
+                </p>
+                <InputError :message="errors.vendor" />
+            </div>
+
             <div class="grid gap-2">
-                <Label for="code">Kode</Label>
+                <Label for="code">{{ type === 'service_point' ? 'Kode Service Point' : 'Kode' }}</Label>
                 <Input
                     id="code"
                     name="code"
@@ -118,7 +138,7 @@ const title = computed(() =>
             </div>
 
             <div class="grid gap-2">
-                <Label for="name">Nama</Label>
+                <Label for="name">{{ type === 'service_point' ? 'Nama Service Point' : 'Nama' }}</Label>
                 <Input
                     id="name"
                     name="name"

@@ -8,6 +8,7 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Modules\Master\Application\Services\VendorAccess;
 use Modules\Master\Domain\Models\Vendor;
 use Modules\Ticket\Domain\Enums\TicketStatus;
 use Modules\Ticket\Domain\Models\Ticket;
@@ -60,7 +61,7 @@ final class TicketStatistics
      */
     private function base(User $user): Builder
     {
-        return Ticket::query()->visibleTo($user);
+        return Ticket::query()->visibleTo($user)->tap(fn ($focused) => app(VendorAccess::class)->focus($focused, $user, 'tickets.vendor_id'));
     }
 
     /**

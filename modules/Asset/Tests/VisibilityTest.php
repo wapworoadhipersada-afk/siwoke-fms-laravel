@@ -31,12 +31,12 @@ beforeEach(function () {
     $this->east = MasterFixtures::chain();
     $boss = Fx::approver();
 
-    $this->westWarehouse = Fx::warehouse($this->west['service_point']);
-    $this->eastWarehouse = Fx::warehouse($this->east['service_point']);
+    $this->westWarehouse = Fx::warehouse($this->west['area']);
+    $this->eastWarehouse = Fx::warehouse($this->east['area']);
     $this->westTech = Fx::technician();
     $this->eastTech = Fx::technician();
-    app(SyncUserLocationScopes::class)->handle($this->westTech, [$this->west['service_point']->id]);
-    app(SyncUserLocationScopes::class)->handle($this->eastTech, [$this->east['service_point']->id]);
+    app(SyncUserLocationScopes::class)->handle($this->westTech, [$this->west['area']->id]);
+    app(SyncUserLocationScopes::class)->handle($this->eastTech, [$this->east['area']->id]);
 
     // One asset in each warehouse, one with each technician, one installed in each region, one lost.
     [$inWest] = Fx::receive($edc, $vendor, $this->westWarehouse, ['W-STOCK'], $boss);
@@ -50,7 +50,7 @@ beforeEach(function () {
 
     foreach ([[$installedWest, $this->westTech, $this->west], [$installedEast, $this->eastTech, $this->east]] as [$asset, $tech, $region]) {
         app(MoveAssets::class)->handle(new MovementCommand(
-            MovementType::Install, [MoveItem::asset($asset->fresh())], Holder::user($tech), Holder::terminal(MasterFixtures::terminalIn($vendor, $region['service_point'])), $tech,
+            MovementType::Install, [MoveItem::asset($asset->fresh())], Holder::user($tech), Holder::terminal(MasterFixtures::terminalIn($vendor, $region['area'])), $tech,
         ));
     }
 
@@ -73,7 +73,7 @@ function serials(object $query): array
 
 it('shows a regional coordinator only what is in their own region', function () {
     $coordinator = User::factory()->create()->assignRole(RoleName::Coordinator->value);
-    app(SyncUserLocationScopes::class)->handle($coordinator, [$this->west['city']->id]);
+    app(SyncUserLocationScopes::class)->handle($coordinator, [$this->west['service_point']->id]);
 
     expect(serials(Asset::query()->visibleTo($coordinator)))->toBe(['W-INST', 'W-STOCK', 'W-TECH'])
         ->and(AssetStock::query()->visibleTo($coordinator)->count())->toBe(1);
@@ -139,7 +139,7 @@ describe('confirming a handover into a warehouse', function () {
     });
 
     it('accepts an approver whose area covers the warehouse', function () {
-        $local = Fx::scopedApprover([$this->west['city']]);
+        $local = Fx::scopedApprover([$this->west['service_point']]);
 
         app(AcceptHandover::class)->handle($this->handover, $local);
 
@@ -147,7 +147,7 @@ describe('confirming a handover into a warehouse', function () {
     });
 
     it('refuses an approver working in another region', function () {
-        $foreign = Fx::scopedApprover([$this->east['city']]);
+        $foreign = Fx::scopedApprover([$this->east['service_point']]);
 
         app(AcceptHandover::class)->handle($this->handover, $foreign);
     })->throws(AuthorizationException::class);

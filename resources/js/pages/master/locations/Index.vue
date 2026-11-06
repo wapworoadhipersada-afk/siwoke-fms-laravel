@@ -62,7 +62,7 @@ const filters = useListFilters(LocationController.index.url(), {
         </div>
 
         <DataTable
-            :columns="['Tingkat', 'Kode', 'Nama', 'Induk', 'Status', '']"
+            :columns="['Tingkat', 'Kode', 'Nama', 'Induk', 'Vendor', 'Status', '']"
             :empty="locations.data.length === 0"
         >
             <tr v-for="location in locations.data" :key="location.ulid">
@@ -71,6 +71,9 @@ const filters = useListFilters(LocationController.index.url(), {
                 <td class="px-4 py-3 font-medium">{{ location.name }}</td>
                 <td class="px-4 py-3 text-muted-foreground">
                     {{ location.parent ?? '—' }}
+                </td>
+                <td class="px-4 py-3">
+                    {{ location.type === 'province' ? '—' : (location.vendor ?? 'Semua vendor') }}
                 </td>
                 <td class="px-4 py-3">
                     <StatusBadge :active="location.is_active" />

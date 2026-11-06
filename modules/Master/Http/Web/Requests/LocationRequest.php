@@ -25,6 +25,8 @@ final class LocationRequest extends FormRequest
             // The type is chosen once, when the location is created, and never changes.
             'type' => [$this->isMethod('POST') ? 'required' : 'prohibited', Rule::enum(LocationType::class)],
             'parent' => ['nullable', 'string', 'size:26'],
+            // Only a service point names a vendor; empty means it serves every vendor.
+            'vendor' => ['nullable', 'string', 'size:26'],
             'code' => ['required', 'string', 'max:30', 'regex:/^[A-Za-z0-9._-]+$/'],
             'name' => ['required', 'string', 'max:255'],
             'address' => ['nullable', 'string', 'max:1000'],

@@ -14,8 +14,10 @@ use Modules\Master\Application\Actions\CreateLocation;
 use Modules\Master\Application\Actions\DeleteLocation;
 use Modules\Master\Application\Actions\UpdateLocation;
 use Modules\Master\Application\Services\LocationAccess;
+use Modules\Master\Application\Services\VendorAccess;
 use Modules\Master\Domain\Enums\LocationType;
 use Modules\Master\Domain\Models\Location;
+use Modules\Master\Domain\Models\Vendor;
 use Modules\Master\Http\Web\Requests\LocationRequest;
 
 final class LocationController extends MasterController
@@ -29,9 +31,12 @@ final class LocationController extends MasterController
         $search = trim((string) $request->query('q'));
         $type = LocationType::tryFrom((string) $request->query('type'));
 
+        $focused = app(VendorAccess::class)->focusedId($this->user());
+
         $locations = Location::query()
             ->visibleTo($this->user())
-            ->with('parent')
+            ->when($focused !== null, fn ($query) => $query->where(fn ($inner) => $inner->whereNull('locations.vendor_id')->orWhere('locations.vendor_id', $focused)))
+            ->with(['parent', 'vendor'])
             ->when($type instanceof LocationType, fn ($query) => $query->where('type', $type?->value))
             ->when($search !== '', fn ($query) => $query->where(fn ($query) => $query
                 ->where('name', 'ilike', "%{$search}%")
@@ -47,6 +52,7 @@ final class LocationController extends MasterController
                 'code' => $location->code,
                 'name' => $location->name,
                 'parent' => $location->parent?->name,
+                'vendor' => $location->vendor === null ? null : $location->vendor->code,
                 'is_active' => $location->is_active,
             ]);
 
@@ -66,6 +72,7 @@ final class LocationController extends MasterController
             'location' => null,
             'types' => $this->typeOptions(),
             'parentOptions' => $this->parentOptions(),
+            'vendors' => $this->vendorOptions(),
         ]);
     }
 
@@ -78,6 +85,7 @@ final class LocationController extends MasterController
         $this->translatingErrors(['parent_id' => 'parent'], fn () => $action->handle([
             'type' => $type,
             'parent_id' => $parent?->id,
+            'vendor_id' => $this->resolveVendor($data['vendor'] ?? null),
             'code' => (string) $data['code'],
             'name' => (string) $data['name'],
             'address' => $data['address'] ?? null,
@@ -102,6 +110,8 @@ final class LocationController extends MasterController
                 'type' => $location->type->value,
                 'type_label' => $location->type->label(),
                 'parent' => $location->parent?->ulid,
+                'vendor' => $location->vendor?->ulid,
+                'vendor_label' => $location->vendor === null ? null : $location->vendor->code,
                 'code' => $location->code,
                 'name' => $location->name,
                 'address' => $location->address,
@@ -111,6 +121,7 @@ final class LocationController extends MasterController
             ],
             'types' => $this->typeOptions(),
             'parentOptions' => $this->parentOptions(),
+            'vendors' => $this->vendorOptions(),
         ]);
     }
 
@@ -127,6 +138,10 @@ final class LocationController extends MasterController
             'longitude' => $data['longitude'] ?? null,
             'is_active' => (bool) $data['is_active'],
         ];
+
+        if ($location->type === LocationType::ServicePoint) {
+            $attributes['vendor_id'] = $this->resolveVendor($data['vendor'] ?? null);
+        }
 
         if ($location->type->parentType() !== null) {
             $attributes['parent_id'] = $this->resolveParent($location->type, $data['parent'] ?? null)?->id;
@@ -201,24 +216,48 @@ final class LocationController extends MasterController
     {
         $options = [
             LocationType::Province->value => [],
-            LocationType::City->value => [],
-            LocationType::Area->value => [],
+            LocationType::ServicePoint->value => [],
         ];
 
         $candidates = Location::query()
             ->visibleTo($this->user())
             ->whereIn('type', array_keys($options))
-            ->with('parent')
+            ->with(['parent', 'vendor'])
             ->orderBy('name')
             ->get();
 
         foreach ($candidates as $candidate) {
             $options[$candidate->type->value][] = [
                 'ulid' => $candidate->ulid,
-                'label' => "{$candidate->name} ({$candidate->code})".($candidate->parent instanceof Location ? " — {$candidate->parent->name}" : ''),
+                'label' => "{$candidate->name} ({$candidate->code})".($candidate->parent instanceof Location ? " — {$candidate->parent->name}" : '').($candidate->vendor_id !== null ? ' · '.$candidate->vendor?->code : ''),
             ];
         }
 
         return $options;
+    }
+
+    /**
+     * @return array<int, array{ulid: string, label: string}>
+     */
+    private function vendorOptions(): array
+    {
+        return Vendor::query()->where('is_active', true)->orderBy('name')->get()
+            ->map(fn (Vendor $vendor): array => ['ulid' => $vendor->ulid, 'label' => "{$vendor->code} — {$vendor->name}"])
+            ->values()->all();
+    }
+
+    private function resolveVendor(mixed $ulid): ?int
+    {
+        if (! is_string($ulid) || $ulid === '') {
+            return null;
+        }
+
+        $id = Vendor::query()->where('ulid', $ulid)->value('id');
+
+        if ($id === null) {
+            throw ValidationException::withMessages(['vendor' => 'Vendor tidak ditemukan.']);
+        }
+
+        return (int) $id;
     }
 }

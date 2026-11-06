@@ -81,7 +81,7 @@ describe('models', function () {
 
 describe('warehouses', function () {
     it('normalises and keeps its code unique', function () {
-        $location = MasterFixtures::chain()['service_point'];
+        $location = MasterFixtures::chain()['area'];
         $warehouse = app(CreateWarehouse::class)->handle(['location_id' => $location->id, 'code' => ' gdg-bdg ', 'name' => 'Gudang Bandung']);
 
         expect($warehouse->code)->toBe('GDG-BDG');
@@ -93,7 +93,7 @@ describe('warehouses', function () {
         expect(fn () => app(CreateWarehouse::class)->handle(['location_id' => 999999, 'code' => 'X1', 'name' => 'X']))
             ->toThrow(ValidationException::class, 'Lokasi');
 
-        $location = MasterFixtures::chain()['service_point'];
+        $location = MasterFixtures::chain()['area'];
         $inactive = User::factory()->create(['is_active' => false]);
 
         expect(fn () => app(CreateWarehouse::class)->handle(['location_id' => $location->id, 'code' => 'X2', 'name' => 'X', 'pic_user_id' => $inactive->id]))

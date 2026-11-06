@@ -83,7 +83,7 @@ const vendorOptions = computed(() =>
                 'Vendor',
                 'Merchant',
                 'Alamat',
-                'Service Point',
+                'Area / Service Point',
                 'Status',
                 '',
             ]"
@@ -105,7 +105,10 @@ const vendorOptions = computed(() =>
                 <td class="max-w-64 truncate px-4 py-3 text-muted-foreground">
                     {{ terminal.address }}
                 </td>
-                <td class="px-4 py-3">{{ terminal.service_point }}</td>
+                <td class="px-4 py-3">
+                    {{ terminal.area }}
+                    <span class="block text-xs text-muted-foreground">{{ terminal.service_point }}<template v-if="terminal.province"> · {{ terminal.province }}</template></span>
+                </td>
                 <td class="px-4 py-3">
                     <StatusBadge
                         :status="terminal.status"

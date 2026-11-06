@@ -27,7 +27,7 @@ const filters = useListFilters(UserController.index.url(), { ...props.filters })
 <template>
     <Head title="Pengguna" />
 
-    <div class="flex flex-1 flex-col gap-6">
+    <div class="flex flex-1 flex-col gap-6 p-4">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
                 <h1 class="text-xl font-semibold text-foreground">Pengguna</h1>
@@ -49,8 +49,14 @@ const filters = useListFilters(UserController.index.url(), { ...props.filters })
         <DataTable :columns="['Nama', 'Jenis', 'Peran', 'Status', '']" :empty="users.data.length === 0">
             <tr v-for="user in users.data" :key="user.ulid">
                 <td class="px-5 py-4">
-                    <p class="font-medium text-foreground">{{ user.name }}</p>
+                    <div class="flex items-center gap-3">
+                        <img v-if="user.photo_url" :src="user.photo_url" :alt="user.name" class="size-9 rounded-full border object-cover" />
+                        <span v-else class="flex size-9 items-center justify-center rounded-full border bg-muted text-sm font-semibold text-muted-foreground">{{ user.name.slice(0, 1).toUpperCase() }}</span>
+                        <div>
+                    <p class="font-medium text-foreground">{{ user.name }}<span v-if="user.user_code" class="ms-2 font-mono text-xs text-muted-foreground">{{ user.user_code }}</span></p>
                     <p class="text-xs text-gray-500">{{ user.email }}<template v-if="user.employee_no"> · {{ user.employee_no }}</template></p>
+                        </div>
+                    </div>
                 </td>
                 <td class="px-5 py-4">{{ user.user_type_label }}</td>
                 <td class="px-5 py-4">

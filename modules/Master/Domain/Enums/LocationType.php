@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Modules\Master\Domain\Enums;
 
+/**
+ * The three levels of coverage: a province, the service points inside it, and the managed areas each
+ * service point looks after. Merchant sites attach to the lowest level, the managed area.
+ */
 enum LocationType: string
 {
     case Province = 'province';
-    case City = 'city';
-    case Area = 'area';
     case ServicePoint = 'service_point';
+    case Area = 'area';
 
     /**
      * The type a parent must have, or null for the root level.
@@ -18,22 +21,20 @@ enum LocationType: string
     {
         return match ($this) {
             self::Province => null,
-            self::City => self::Province,
-            self::Area => self::City,
-            self::ServicePoint => self::Area,
+            self::ServicePoint => self::Province,
+            self::Area => self::ServicePoint,
         };
     }
 
     /**
-     * @return 1|2|3|4
+     * @return 1|2|3
      */
     public function depth(): int
     {
         return match ($this) {
             self::Province => 1,
-            self::City => 2,
+            self::ServicePoint => 2,
             self::Area => 3,
-            self::ServicePoint => 4,
         };
     }
 
@@ -41,9 +42,8 @@ enum LocationType: string
     {
         return match ($this) {
             self::Province => 'Provinsi',
-            self::City => 'Kota/Kabupaten',
-            self::Area => 'Area',
             self::ServicePoint => 'Service Point',
+            self::Area => 'Area Kelolaan',
         };
     }
 }

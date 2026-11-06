@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Modules\IAM\Domain\Permissions;
 use Modules\Ticket\Application\DTOs\ActionContext;
+use Modules\Ticket\Application\Services\TechnicianCoverage;
 use Modules\Ticket\Application\Services\TicketWorkflow;
 use Modules\Ticket\Domain\Enums\TicketEvent;
 use Modules\Ticket\Domain\Enums\TicketStatus;
@@ -23,12 +24,21 @@ use Modules\Ticket\Domain\Models\TicketVisit;
  */
 final class AssignTicket
 {
-    public function __construct(private readonly TicketWorkflow $workflow) {}
+    public function __construct(
+        private readonly TicketWorkflow $workflow,
+        private readonly TechnicianCoverage $coverage,
+    ) {}
 
     public function handle(Ticket $ticket, User $technician, User $assigner, ?CarbonInterface $scheduledAt = null, ?string $reason = null): Ticket
     {
         if (! $technician->is_active || ! $technician->can(Permissions::TICKET_WORK)) {
             throw ValidationException::withMessages(['technician' => 'Teknisi tidak aktif atau tidak berhak mengerjakan tiket.']);
+        }
+
+        $why = $this->coverage->reasonNot($technician, $ticket);
+
+        if ($why !== null) {
+            throw ValidationException::withMessages(['technician' => $why]);
         }
 
         return DB::transaction(function () use ($ticket, $technician, $assigner, $scheduledAt, $reason): Ticket {

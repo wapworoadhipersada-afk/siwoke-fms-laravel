@@ -6,6 +6,7 @@ import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { routeArg } from '@/lib/routeArg';
 import type { PermissionGroup, RoleDetail } from '@/types/iam';
 
 const props = defineProps<{
@@ -18,7 +19,7 @@ defineOptions({
     layout: { breadcrumbs: [{ title: 'Peran', href: RoleController.index() }] },
 });
 
-const form = computed(() => (props.role ? RoleController.update.form(String(props.role.id)) : RoleController.store.form()));
+const form = computed(() => (props.role ? RoleController.update.form(routeArg(props.role.id)) : RoleController.store.form()));
 const title = computed(() => (props.role ? `Ubah peran ${props.role.label}` : 'Tambah peran'));
 const locked = computed(() => props.role?.locked ?? false);
 
@@ -55,7 +56,7 @@ const toggleGroup = (group: PermissionGroup): void => {
 <template>
     <Head :title="title" />
 
-    <div class="flex flex-1 flex-col gap-6">
+    <div class="flex flex-1 flex-col gap-6 p-4">
         <div>
             <h1 class="text-xl font-semibold text-foreground">{{ title }}</h1>
             <p v-if="locked" class="mt-1 text-sm text-muted-foreground">

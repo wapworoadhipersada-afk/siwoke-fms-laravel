@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Modules\Master\Application\Services\LocationAccess;
+use Modules\Master\Application\Services\VendorAccess;
 use Modules\Master\Domain\Enums\LocationType;
 use Modules\Shared\Domain\Concerns\HasPublicUlid;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
@@ -24,6 +25,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property int $id
  * @property string $ulid
  * @property int|null $parent_id
+ * @property int|null $vendor_id
  * @property LocationType $type
  * @property string $code
  * @property string $name
@@ -37,7 +39,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  */
-#[Fillable(['parent_id', 'type', 'code', 'name', 'address', 'latitude', 'longitude', 'is_active'])]
+#[Fillable(['parent_id', 'vendor_id', 'type', 'code', 'name', 'address', 'latitude', 'longitude', 'is_active'])]
 class Location extends Model
 {
     use HasPublicUlid, LogsActivity, SoftDeletes;
@@ -68,6 +70,16 @@ class Location extends Model
             'path' => ($parent->path ?? '/').$this->id.'/',
             'depth' => ($parent->depth ?? 0) + 1,
         ])->saveQuietly();
+    }
+
+    /**
+     * The vendor a service point (and the areas under it) works for. Empty means shared by every vendor.
+     *
+     * @return BelongsTo<Vendor, $this>
+     */
+    public function vendor(): BelongsTo
+    {
+        return $this->belongsTo(Vendor::class);
     }
 
     public function isDescendantOf(self $other): bool
@@ -109,6 +121,13 @@ class Location extends Model
     {
         $access = app(LocationAccess::class);
 
+        // A service point or area of one vendor is hidden from people who work only for other vendors; shared ones stay.
+        $vendors = app(VendorAccess::class)->allowedIds($user);
+
+        if ($vendors !== null) {
+            $query->where(fn (Builder $inner) => $inner->whereNull('locations.vendor_id')->orWhereIn('locations.vendor_id', $vendors));
+        }
+
         if ($access->isUnrestricted($user)) {
             return $query;
         }
@@ -130,7 +149,7 @@ class Location extends Model
     {
         return LogOptions::defaults()
             ->useLogName('master')
-            ->logOnly(['parent_id', 'type', 'code', 'name', 'address', 'is_active'])
+            ->logOnly(['parent_id', 'vendor_id', 'type', 'code', 'name', 'address', 'is_active'])
             ->logOnlyDirty()
             ->dontLogEmptyChanges();
     }

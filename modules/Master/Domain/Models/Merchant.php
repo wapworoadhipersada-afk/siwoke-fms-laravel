@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Modules\Master\Application\Services\VendorAccess;
 use Modules\Shared\Domain\Concerns\HasPublicUlid;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
@@ -68,6 +69,8 @@ class Merchant extends Model
      */
     public function scopeVisibleTo(Builder $query, User $user): Builder
     {
+        $query = app(VendorAccess::class)->constrain($query, $user, 'merchants.vendor_id');
+
         return $query->where(function (Builder $query) use ($user): void {
             $query->whereIn('merchants.id', MerchantSite::query()->visibleTo($user)->select('merchant_sites.merchant_id'))
                 ->orDoesntHave('sites');

@@ -176,8 +176,12 @@ function formatDate(iso: string | null): string {
                         <dd>{{ ticket.merchant.phone ?? '—' }}</dd>
                         <dt class="text-muted-foreground">Alamat</dt>
                         <dd>{{ ticket.site.address }}</dd>
+                        <dt class="text-muted-foreground">Area Kelolaan</dt>
+                        <dd>{{ ticket.site.area }}</dd>
                         <dt class="text-muted-foreground">Service Point</dt>
-                        <dd>{{ ticket.site.service_point }}</dd>
+                        <dd>{{ ticket.site.service_point ?? '—' }}</dd>
+                        <dt class="text-muted-foreground">Provinsi</dt>
+                        <dd>{{ ticket.site.province ?? '—' }}</dd>
                         <dt class="text-muted-foreground">PIC</dt>
                         <dd>
                             {{ ticket.site.pic_name ?? '—' }}

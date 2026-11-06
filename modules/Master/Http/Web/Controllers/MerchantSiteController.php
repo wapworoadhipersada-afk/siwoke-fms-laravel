@@ -31,7 +31,7 @@ final class MerchantSiteController extends MasterController
         return Inertia::render('master/sites/Form', [
             'merchant' => $this->merchantSummary($merchant),
             'site' => null,
-            'servicePoints' => $this->servicePointOptions(),
+            'servicePoints' => $this->servicePointOptions($merchant->vendor_id),
         ]);
     }
 
@@ -43,7 +43,7 @@ final class MerchantSiteController extends MasterController
 
         $this->translatingErrors(['location_id' => 'location'], fn () => $action->handle([
             'merchant_id' => $merchant->id,
-            'location_id' => $this->resolveServicePoint($data['location'])->id,
+            'location_id' => $this->resolveArea($data['location'])->id,
             ...$this->attributes($data),
         ]));
 
@@ -70,7 +70,7 @@ final class MerchantSiteController extends MasterController
                 'pic_phone' => $site->pic_phone,
                 'is_active' => $site->is_active,
             ],
-            'servicePoints' => $this->servicePointOptions(),
+            'servicePoints' => $this->servicePointOptions($site->merchant->vendor_id),
         ]);
     }
 
@@ -81,7 +81,7 @@ final class MerchantSiteController extends MasterController
         $data = $request->validated();
 
         $this->translatingErrors(['location_id' => 'location'], fn () => $action->handle($site, [
-            'location_id' => $this->resolveServicePoint($data['location'])->id,
+            'location_id' => $this->resolveArea($data['location'])->id,
             ...$this->attributes($data),
         ]));
 
@@ -117,15 +117,15 @@ final class MerchantSiteController extends MasterController
         abort_unless(MerchantSite::query()->visibleTo($this->user())->whereKey($site->id)->exists(), 404);
     }
 
-    private function resolveServicePoint(mixed $ulid): Location
+    private function resolveArea(mixed $ulid): Location
     {
         $location = is_string($ulid) ? Location::query()->where('ulid', $ulid)->first() : null;
 
         if (! $location instanceof Location) {
-            throw ValidationException::withMessages(['location' => 'Service Point tidak ditemukan.']);
+            throw ValidationException::withMessages(['location' => 'Area Kelolaan tidak ditemukan.']);
         }
 
-        abort_unless($this->access->canAccess($this->user(), $location), 403, 'Service Point berada di luar wilayah Anda.');
+        abort_unless($this->access->canAccess($this->user(), $location), 403, 'Area Kelolaan berada di luar wilayah Anda.');
 
         return $location;
     }
@@ -158,11 +158,12 @@ final class MerchantSiteController extends MasterController
     /**
      * @return array<int, array{ulid: string, label: string}>
      */
-    private function servicePointOptions(): array
+    private function servicePointOptions(?int $vendorId = null): array
     {
         return Location::query()
             ->visibleTo($this->user())
-            ->where('type', LocationType::ServicePoint->value)
+            ->where('type', LocationType::Area->value)
+            ->when($vendorId !== null, fn ($query) => $query->where(fn ($inner) => $inner->whereNull('vendor_id')->orWhere('vendor_id', $vendorId)))
             ->with('parent')
             ->orderBy('name')
             ->get()

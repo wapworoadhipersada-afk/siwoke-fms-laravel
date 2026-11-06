@@ -25,6 +25,7 @@ final class NavigationCatalog
 
         return [
             $page('dashboard', null, 'Menu', 'Dashboard', 'dashboard', 'grid', null),
+            $page('profile.me', null, 'Menu', 'Profil Saya', 'me.show', 'user', null),
 
             $group('operations', 'Menu', 'Operasional', 'list'),
             $page('tickets', 'operations', 'Menu', 'Tiket', 'tickets.index', 'list', Permissions::TICKET_VIEW),

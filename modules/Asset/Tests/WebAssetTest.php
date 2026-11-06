@@ -91,17 +91,17 @@ describe('catalog', function () {
         $regional = User::factory()->create()->assignRole(RoleName::OperationalAdmin->value);
         app(SyncUserLocationScopes::class)->handle($regional, [$west['province']->id]);
 
-        $this->actingAs($regional)->post('/asset/warehouses', ['location' => $west['service_point']->ulid, 'code' => 'gdg-w', 'name' => 'Gudang Barat', 'is_active' => 1])
+        $this->actingAs($regional)->post('/asset/warehouses', ['location' => $west['area']->ulid, 'code' => 'gdg-w', 'name' => 'Gudang Barat', 'is_active' => 1])
             ->assertRedirect('/asset/warehouses');
 
-        $this->actingAs($regional)->post('/asset/warehouses', ['location' => $east['service_point']->ulid, 'code' => 'gdg-e', 'name' => 'Gudang Timur', 'is_active' => 1])
+        $this->actingAs($regional)->post('/asset/warehouses', ['location' => $east['area']->ulid, 'code' => 'gdg-e', 'name' => 'Gudang Timur', 'is_active' => 1])
             ->assertForbidden();
 
         expect(Warehouse::query()->count())->toBe(1);
     });
 
     it('reports a duplicate warehouse code on the field', function () {
-        $location = MasterFixtures::chain()['service_point'];
+        $location = MasterFixtures::chain()['area'];
         Fx::warehouse($location);
         $existing = Warehouse::query()->sole();
 
@@ -371,7 +371,7 @@ describe('stock', function () {
 it('lets a super admin install an asset that a technician holds, through the engine', function () {
     $warehouse = Fx::warehouse();
     $tech = Fx::technician();
-    $terminal = MasterFixtures::terminalIn($this->vendor, MasterFixtures::chain()['service_point']);
+    $terminal = MasterFixtures::terminalIn($this->vendor, MasterFixtures::chain()['area']);
     [$asset] = Fx::receive(Fx::edcModel(), $this->vendor, $warehouse, ['SN-1']);
     Fx::issue($warehouse, $tech, [$asset]);
 

@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Modules\IAM\Domain\Permissions;
 use Modules\Master\Application\Services\LocationAccess;
+use Modules\Master\Application\Services\VendorAccess;
 use Modules\Master\Domain\Models\MerchantSite;
 use Modules\Master\Domain\Models\Terminal;
 use Modules\Master\Domain\Models\Vendor;
@@ -150,6 +151,8 @@ class Ticket extends Model
      */
     public function scopeVisibleTo(Builder $query, User $user): Builder
     {
+        $query = app(VendorAccess::class)->constrain($query, $user, 'tickets.vendor_id');
+
         if (app(LocationAccess::class)->isUnrestricted($user)) {
             return $query;
         }

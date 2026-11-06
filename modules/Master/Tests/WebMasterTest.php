@@ -126,24 +126,31 @@ describe('vendors', function () {
 });
 
 describe('locations', function () {
-    it('lets a super admin build the tree level by level', function () {
+    it('lets a super admin build the tree level by level, with a vendor on the service point', function () {
         $admin = webUser(RoleName::SuperAdmin);
+        $vendor = Fx::vendor('BRI');
 
         $this->actingAs($admin)->post('/master/locations', ['type' => 'province', 'code' => '32', 'name' => 'Jawa Barat', 'is_active' => 1])->assertRedirect('/master/locations');
         $province = Location::query()->where('code', '32')->sole();
 
-        $this->actingAs($admin)->post('/master/locations', ['type' => 'city', 'parent' => $province->ulid, 'code' => '3273', 'name' => 'Kota Bandung', 'is_active' => 1])->assertRedirect('/master/locations');
-        $city = Location::query()->where('code', '3273')->sole();
+        $this->actingAs($admin)->post('/master/locations', ['type' => 'service_point', 'parent' => $province->ulid, 'vendor' => $vendor->ulid, 'code' => 'SP-BDG', 'name' => 'SP Bandung', 'is_active' => 1])->assertRedirect('/master/locations');
+        $servicePoint = Location::query()->where('code', 'SP-BDG')->sole();
 
-        expect($city->parent_id)->toBe($province->id)
-            ->and($city->path)->toBe("/{$province->id}/{$city->id}/");
+        $this->actingAs($admin)->post('/master/locations', ['type' => 'area', 'parent' => $servicePoint->ulid, 'code' => 'AR-1', 'name' => 'Area Cicendo', 'is_active' => 1])->assertRedirect('/master/locations');
+        $area = Location::query()->where('code', 'AR-1')->sole();
+
+        expect($servicePoint->parent_id)->toBe($province->id)
+            ->and($servicePoint->vendor_id)->toBe($vendor->id)
+            ->and($servicePoint->path)->toBe("/{$province->id}/{$servicePoint->id}/")
+            ->and($area->vendor_id)->toBe($vendor->id)
+            ->and($area->path)->toBe("/{$province->id}/{$servicePoint->id}/{$area->id}/");
     });
 
     it('rejects the wrong parent type with a field error', function () {
         $chain = Fx::chain();
 
         $this->actingAs(webUser(RoleName::SuperAdmin))
-            ->post('/master/locations', ['type' => 'service_point', 'parent' => $chain['city']->ulid, 'code' => 'SP1', 'name' => 'SP', 'is_active' => 1])
+            ->post('/master/locations', ['type' => 'service_point', 'parent' => $chain['service_point']->ulid, 'code' => 'SP1', 'name' => 'SP', 'is_active' => 1])
             ->assertSessionHasErrors('parent');
     });
 
@@ -151,14 +158,14 @@ describe('locations', function () {
         $chain = Fx::chain();
 
         $this->actingAs(webUser(RoleName::SuperAdmin))
-            ->put("/master/locations/{$chain['city']->ulid}", ['type' => 'area', 'parent' => $chain['province']->ulid, 'code' => 'X', 'name' => 'X', 'is_active' => 1])
+            ->put("/master/locations/{$chain['service_point']->ulid}", ['type' => 'area', 'parent' => $chain['province']->ulid, 'code' => 'X', 'name' => 'X', 'is_active' => 1])
             ->assertSessionHasErrors('type');
     });
 
     it('filters by type and shows only what the user is assigned to', function () {
         $west = Fx::chain();
         Fx::chain();
-        $user = webUser(RoleName::OperationalAdmin, [$west['city']]);
+        $user = webUser(RoleName::OperationalAdmin, [$west['service_point']]);
 
         $this->actingAs($user)->get('/master/locations?type=service_point')
             ->assertInertia(fn (Assert $page) => $page->has('locations.data', 1)->where('locations.data.0.ulid', $west['service_point']->ulid));
@@ -169,9 +176,9 @@ describe('locations', function () {
         $east = Fx::chain();
         $user = webUser(RoleName::OperationalAdmin, [$west['province']]);
 
-        $this->actingAs($user)->get("/master/locations/{$west['city']->ulid}/edit")->assertOk();
-        $this->actingAs($user)->get("/master/locations/{$east['city']->ulid}/edit")->assertNotFound();
-        $this->actingAs($user)->delete("/master/locations/{$east['service_point']->ulid}")->assertNotFound();
+        $this->actingAs($user)->get("/master/locations/{$west['service_point']->ulid}/edit")->assertOk();
+        $this->actingAs($user)->get("/master/locations/{$east['service_point']->ulid}/edit")->assertNotFound();
+        $this->actingAs($user)->delete("/master/locations/{$east['area']->ulid}")->assertNotFound();
     });
 
     it('forbids creating under a parent outside the assigned area', function () {
@@ -180,11 +187,11 @@ describe('locations', function () {
         $user = webUser(RoleName::OperationalAdmin, [$west['province']]);
 
         $this->actingAs($user)
-            ->post('/master/locations', ['type' => 'city', 'parent' => $east['province']->ulid, 'code' => 'C9', 'name' => 'Sneaky', 'is_active' => 1])
+            ->post('/master/locations', ['type' => 'service_point', 'parent' => $east['province']->ulid, 'code' => 'C9', 'name' => 'Sneaky', 'is_active' => 1])
             ->assertForbidden();
 
         $this->actingAs($user)
-            ->post('/master/locations', ['type' => 'city', 'parent' => $west['province']->ulid, 'code' => 'C9', 'name' => 'Allowed', 'is_active' => 1])
+            ->post('/master/locations', ['type' => 'service_point', 'parent' => $west['province']->ulid, 'code' => 'C9', 'name' => 'Allowed', 'is_active' => 1])
             ->assertRedirect('/master/locations');
     });
 
@@ -200,11 +207,11 @@ describe('locations', function () {
         $west = Fx::chain();
         Fx::chain();
 
-        $this->actingAs(webUser(RoleName::OperationalAdmin, [$west['city']]))->get('/master/locations/create')
+        $this->actingAs(webUser(RoleName::OperationalAdmin, [$west['service_point']]))->get('/master/locations/create')
             ->assertInertia(fn (Assert $page) => $page
                 ->has('parentOptions.province', 0)
-                ->has('parentOptions.city', 1)
-                ->has('parentOptions.area', 1));
+                ->has('parentOptions.service_point', 1)
+                ->has('vendors'));
     });
 });
 
@@ -233,7 +240,7 @@ describe('merchants, sites and terminals', function () {
     it('registers a site and then a TID from that site', function () {
         $admin = webUser(RoleName::SuperAdmin);
         $merchant = Fx::merchant(Fx::vendor());
-        $servicePoint = Fx::chain()['service_point'];
+        $servicePoint = Fx::chain()['area'];
 
         $this->actingAs($admin)->get("/master/merchants/{$merchant->ulid}/sites/create")
             ->assertInertia(fn (Assert $page) => $page->component('master/sites/Form')->has('servicePoints', 1));
@@ -262,9 +269,9 @@ describe('merchants, sites and terminals', function () {
                 ->where('sites.0.terminals.0.tid', 'TID0001'));
     });
 
-    it('refuses a site on an area instead of a service point', function () {
+    it('refuses a site on a service point instead of a managed area', function () {
         $merchant = Fx::merchant(Fx::vendor());
-        $area = Fx::chain()['area'];
+        $area = Fx::chain()['service_point'];
 
         $this->actingAs(webUser(RoleName::SuperAdmin))
             ->post("/master/merchants/{$merchant->ulid}/sites", ['location' => $area->ulid, 'address' => 'Jl. X', 'is_active' => 1])
@@ -272,7 +279,7 @@ describe('merchants, sites and terminals', function () {
     });
 
     it('lists terminals filtered by vendor and status', function () {
-        $sp = Fx::chain()['service_point'];
+        $sp = Fx::chain()['area'];
         Fx::terminalIn($bri = Fx::vendor('BRI'), $sp);
         Fx::terminalIn(Fx::vendor('CIMB'), $sp);
 
@@ -282,7 +289,7 @@ describe('merchants, sites and terminals', function () {
 
     it('edits and deletes a TID and a site', function () {
         $admin = webUser(RoleName::SuperAdmin);
-        $terminal = Fx::terminalIn(Fx::vendor(), Fx::chain()['service_point']);
+        $terminal = Fx::terminalIn(Fx::vendor(), Fx::chain()['area']);
         $site = $terminal->site;
 
         $this->actingAs($admin)->put("/master/terminals/{$terminal->ulid}", ['site' => $site->ulid, 'tid' => 'NEWTID1', 'status' => 'removed'])
@@ -303,7 +310,7 @@ describe('merchants, sites and terminals', function () {
 
     it('will not move a TID to a site of a different merchant through the form', function () {
         $vendor = Fx::vendor();
-        $sp = Fx::chain()['service_point'];
+        $sp = Fx::chain()['area'];
         $terminal = Fx::terminalIn($vendor, $sp);
         $otherSite = Fx::site(Fx::merchant($vendor), $sp);
 
@@ -316,8 +323,8 @@ describe('merchants, sites and terminals', function () {
         $west = Fx::chain();
         $east = Fx::chain();
         $vendor = Fx::vendor();
-        $westTerminal = Fx::terminalIn($vendor, $west['service_point']);
-        $eastTerminal = Fx::terminalIn($vendor, $east['service_point']);
+        $westTerminal = Fx::terminalIn($vendor, $west['area']);
+        $eastTerminal = Fx::terminalIn($vendor, $east['area']);
         $user = webUser(RoleName::OperationalAdmin, [$west['province']]);
 
         $this->actingAs($user)->get("/master/merchants/{$westTerminal->merchant->ulid}")->assertOk();
@@ -347,11 +354,11 @@ describe('merchants, sites and terminals', function () {
         $merchant = Fx::merchant(Fx::vendor());
 
         $this->actingAs($user)->post("/master/merchants/{$merchant->ulid}/sites", [
-            'location' => $east['service_point']->ulid, 'address' => 'Jl. Luar', 'is_active' => 1,
+            'location' => $east['area']->ulid, 'address' => 'Jl. Luar', 'is_active' => 1,
         ])->assertForbidden();
     });
 });
 
-it('uses a service point as the only site location', function () {
-    expect(LocationType::ServicePoint->parentType())->toBe(LocationType::Area);
+it('uses a managed area as the only site location', function () {
+    expect(LocationType::Area->parentType())->toBe(LocationType::ServicePoint);
 });

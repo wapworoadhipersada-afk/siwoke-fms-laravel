@@ -13,11 +13,14 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Modules\IAM\Domain\Permissions;
 use Modules\Master\Application\Actions\SyncUserLocationScopes;
+use Modules\Master\Application\Actions\SyncUserVendors;
 use Modules\Master\Domain\Models\Location;
+use Modules\Master\Domain\Models\Vendor;
 
 /**
- * Which areas a person works in. Someone without any area sees no tickets, merchants or assets at all,
- * unless their role sees every area, so this is the screen that actually opens the data to them.
+ * What a person covers: the areas they work in and the vendors they work for. Both can be several. Someone
+ * without any area sees no tickets, merchants or assets at all (unless their role sees every area), so this
+ * is the screen that actually opens the data to them. No vendor means "not limited by vendor".
  */
 final class UserScopeController extends MasterController
 {
@@ -26,27 +29,50 @@ final class UserScopeController extends MasterController
         $this->allow(Permissions::IAM_USER_UPDATE);
 
         return Inertia::render('master/user-scopes/Edit', [
-            'managed' => ['ulid' => $managedUser->ulid, 'name' => $managedUser->name, 'email' => $managedUser->email, 'sees_everything' => $managedUser->can(Permissions::DATA_SCOPE_ALL)],
-            'locations' => Location::query()->orderBy('path')->get()->map(fn (Location $location): array => [
+            'managed' => [
+                'ulid' => $managedUser->ulid,
+                'name' => $managedUser->name,
+                'email' => $managedUser->email,
+                'user_code' => $managedUser->user_code,
+                'sees_everything' => $managedUser->can(Permissions::DATA_SCOPE_ALL),
+            ],
+            'locations' => Location::query()->with('vendor')->orderBy('path')->get()->map(fn (Location $location): array => [
                 'id' => $location->id,
                 'name' => $location->name,
+                'code' => $location->code,
+                'type' => $location->type->value,
                 'type_label' => $location->type->label(),
                 'depth' => $location->depth,
+                'vendor' => $location->vendor === null ? null : $location->vendor->code,
             ])->values()->all(),
             'assigned' => DB::table('user_location_scopes')->where('user_id', $managedUser->id)->pluck('location_id')->map(fn (mixed $id): int => (int) $id)->values()->all(),
+            'vendors' => Vendor::query()->where('is_active', true)->orderBy('name')->get()->map(fn (Vendor $vendor): array => ['ulid' => $vendor->ulid, 'label' => "{$vendor->code} — {$vendor->name}"])->values()->all(),
+            'assignedVendors' => Vendor::query()->whereIn('id', DB::table('user_vendors')->where('user_id', $managedUser->id)->pluck('vendor_id'))->pluck('ulid')->values()->all(),
         ]);
     }
 
-    public function update(Request $request, User $managedUser, SyncUserLocationScopes $action): RedirectResponse
+    public function update(Request $request, User $managedUser, SyncUserLocationScopes $areas, SyncUserVendors $vendors): RedirectResponse
     {
         $this->allow(Permissions::IAM_USER_UPDATE);
 
-        /** @var array{location_ids?: list<int>|null} $data */
-        $data = $request->validate(['location_ids' => ['nullable', 'array'], 'location_ids.*' => ['integer']]);
+        /** @var array{location_ids?: list<int>|null, vendor_ids?: list<string>|null} $data */
+        $data = $request->validate([
+            'location_ids' => ['nullable', 'array'],
+            'location_ids.*' => ['integer'],
+            'vendor_ids' => ['nullable', 'array'],
+            'vendor_ids.*' => ['string', 'size:26'],
+        ]);
 
         try {
-            $action->handle($managedUser, array_values($data['location_ids'] ?? []));
-            $this->success('Area kerja disimpan.');
+            $vendorIds = array_values(array_map(intval(...), Vendor::query()->whereIn('ulid', $data['vendor_ids'] ?? [])->pluck('id')->all()));
+
+            if (count($vendorIds) !== count(array_unique($data['vendor_ids'] ?? []))) {
+                throw ValidationException::withMessages(['vendor_ids' => 'Ada vendor yang tidak ditemukan.']);
+            }
+
+            $areas->handle($managedUser, array_values($data['location_ids'] ?? []));
+            $vendors->handle($managedUser, $vendorIds, $this->user());
+            $this->success('Cakupan pengguna disimpan.');
         } catch (ValidationException $exception) {
             $this->refusal($exception);
         }

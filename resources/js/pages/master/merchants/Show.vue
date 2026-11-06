@@ -96,9 +96,8 @@ const details: [string, string | null][] = [
                             <StatusBadge :active="site.is_active" />
                         </CardTitle>
                         <CardDescription>
-                            {{ site.address }} · {{ site.service_point
-                            }}<template v-if="site.area">
-                                ({{ site.area }})</template
+                            {{ site.address }} · {{ site.area }}<template v-if="site.service_point">
+                                ({{ site.service_point }}<template v-if="site.province">, {{ site.province }}</template>)</template
                             >
                         </CardDescription>
                         <p

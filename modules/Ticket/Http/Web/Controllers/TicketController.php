@@ -15,6 +15,7 @@ use Modules\Document\Domain\Enums\AttachmentKind;
 use Modules\Document\Domain\Models\Attachment;
 use Modules\IAM\Domain\Enums\UserType;
 use Modules\IAM\Domain\Permissions;
+use Modules\Master\Application\Services\VendorAccess;
 use Modules\Master\Domain\Models\Terminal;
 use Modules\Master\Domain\Models\Vendor;
 use Modules\Shared\Http\ModuleController;
@@ -23,6 +24,7 @@ use Modules\Ticket\Application\Actions\CancelTicket;
 use Modules\Ticket\Application\Actions\CreateTicket;
 use Modules\Ticket\Application\Actions\ReopenTicket;
 use Modules\Ticket\Application\Actions\UnassignTicket;
+use Modules\Ticket\Application\Services\TechnicianCoverage;
 use Modules\Ticket\Domain\Enums\TicketPriority;
 use Modules\Ticket\Domain\Enums\TicketStatus;
 use Modules\Ticket\Domain\Enums\VisitOutcome;
@@ -51,6 +53,7 @@ final class TicketController extends ModuleController
 
         $tickets = Ticket::query()
             ->visibleTo($user)
+            ->tap(fn ($focused) => app(VendorAccess::class)->focus($focused, $user, 'tickets.vendor_id'))
             ->with(['type', 'vendor', 'terminal', 'site.merchant', 'technician'])
             ->when($status instanceof TicketStatus, fn ($query) => $query->where('tickets.status', $status?->value))
             ->when($type !== '', fn ($query) => $query->whereHas('type', fn ($query) => $query->where('ulid', $type)))
@@ -159,7 +162,7 @@ final class TicketController extends ModuleController
         $this->allow(Permissions::TICKET_VIEW);
         $this->visible($ticket);
 
-        $ticket->load(['type', 'vendor', 'terminal', 'site.merchant', 'site.location', 'technician', 'creator']);
+        $ticket->load(['type', 'vendor', 'terminal', 'site.merchant', 'site.location.parent.parent', 'technician', 'creator']);
         $user = $this->user();
         $status = $ticket->status;
 
@@ -201,7 +204,9 @@ final class TicketController extends ModuleController
                 'merchant' => ['ulid' => $ticket->site->merchant->ulid, 'name' => $ticket->site->merchant->name, 'phone' => $ticket->site->merchant->phone],
                 'site' => [
                     'address' => $ticket->site->address,
-                    'service_point' => $ticket->site->location->name,
+                    'area' => $ticket->site->location->name,
+                    'service_point' => $ticket->site->location->parent?->name,
+                    'province' => $ticket->site->location->parent?->parent?->name,
                     'pic_name' => $ticket->site->pic_name,
                     'pic_phone' => $ticket->site->pic_phone,
                     'latitude' => $ticket->site->latitude,
@@ -273,7 +278,7 @@ final class TicketController extends ModuleController
                 'unassigned_at' => $assignment->unassigned_at?->toIso8601String(),
                 'unassign_reason' => $assignment->unassign_reason,
             ])->values()->all(),
-            'technicians' => $canAssign ? $this->technicianOptions() : [],
+            'technicians' => $canAssign ? $this->technicianOptions($ticket) : [],
             'can' => [
                 'assign' => $canAssign,
                 'unassign' => $user->can(Permissions::TICKET_ASSIGN) && in_array($status, [TicketStatus::Assigned, TicketStatus::Accepted], true),
@@ -368,8 +373,10 @@ final class TicketController extends ModuleController
     /**
      * @return array<int, array{ulid: string, label: string}>
      */
-    private function technicianOptions(): array
+    private function technicianOptions(?Ticket $ticket = null): array
     {
+        $coverage = app(TechnicianCoverage::class);
+
         return User::query()
             ->permission(Permissions::TICKET_WORK)
             ->where('user_type', UserType::Technician->value)
@@ -377,7 +384,9 @@ final class TicketController extends ModuleController
             ->orderBy('name')
             ->limit(500)
             ->get()
-            ->map(fn (User $technician): array => ['ulid' => $technician->ulid, 'label' => $technician->name])
+            // Only engineers who cover this ticket's vendor and area are offered for it.
+            ->filter(fn (User $technician): bool => ! $ticket instanceof Ticket || $coverage->covers($technician, $ticket))
+            ->map(fn (User $technician): array => ['ulid' => $technician->ulid, 'label' => $technician->name.($technician->user_code === null ? '' : " ({$technician->user_code})")])
             ->values()->all();
     }
 }

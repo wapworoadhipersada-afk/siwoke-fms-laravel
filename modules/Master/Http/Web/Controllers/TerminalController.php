@@ -13,6 +13,7 @@ use Modules\IAM\Domain\Permissions;
 use Modules\Master\Application\Actions\CreateTerminal;
 use Modules\Master\Application\Actions\DeleteTerminal;
 use Modules\Master\Application\Actions\UpdateTerminal;
+use Modules\Master\Application\Services\VendorAccess;
 use Modules\Master\Domain\Enums\TerminalStatus;
 use Modules\Master\Domain\Models\MerchantSite;
 use Modules\Master\Domain\Models\Terminal;
@@ -31,7 +32,8 @@ final class TerminalController extends MasterController
 
         $terminals = Terminal::query()
             ->visibleTo($this->user())
-            ->with(['vendor', 'merchant', 'site.location'])
+            ->tap(fn ($focused) => app(VendorAccess::class)->focus($focused, $this->user(), 'terminals.vendor_id'))
+            ->with(['vendor', 'merchant', 'site.location.parent.parent'])
             ->when($vendorUlid !== '', fn ($query) => $query->whereHas('vendor', fn ($query) => $query->where('ulid', $vendorUlid)))
             ->when($status instanceof TerminalStatus, fn ($query) => $query->where('status', $status?->value))
             ->when($search !== '', fn ($query) => $query->where('tid', 'ilike', "%{$search}%"))
@@ -45,7 +47,9 @@ final class TerminalController extends MasterController
                 'merchant' => $terminal->merchant->name,
                 'merchant_ulid' => $terminal->merchant->ulid,
                 'address' => $terminal->site->address,
-                'service_point' => $terminal->site->location->name,
+                'area' => $terminal->site->location->name,
+                'service_point' => $terminal->site->location->parent?->name,
+                'province' => $terminal->site->location->parent?->parent?->name,
                 'status' => $terminal->status->value,
                 'status_label' => $terminal->status->label(),
             ]);

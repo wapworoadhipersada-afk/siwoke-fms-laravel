@@ -17,7 +17,7 @@ defineOptions({
 <template>
     <Head title="Password sementara" />
 
-    <div class="flex flex-1 flex-col gap-6">
+    <div class="flex flex-1 flex-col gap-6 p-4">
         <div>
             <h1 class="text-xl font-semibold text-foreground">
                 {{ reset ? 'Password baru dibuat' : 'Pengguna dibuat' }}

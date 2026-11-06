@@ -20,8 +20,8 @@ beforeEach(function () {
 
     $this->west = MasterFixtures::chain();
     $this->east = MasterFixtures::chain();
-    $this->westTicket = Fx::ticket(Fx::terminal('W', $this->west['service_point']));
-    $this->eastTicket = Fx::ticket(Fx::terminal('E', $this->east['service_point']));
+    $this->westTicket = Fx::ticket(Fx::terminal('W', $this->west['area']));
+    $this->eastTicket = Fx::ticket(Fx::terminal('E', $this->east['area']));
 });
 
 function ticketIds(object $query): array
@@ -39,7 +39,7 @@ it('shows everything to users who see every area', function (RoleName $role) {
 })->with([RoleName::SuperAdmin, RoleName::Managerial]);
 
 it('shows an office user only the tickets at sites in their area', function () {
-    $coordinator = Fx::scopedDispatcher([$this->west['city']]);
+    $coordinator = Fx::scopedDispatcher([$this->west['service_point']]);
 
     expect(ticketIds(Ticket::query()->visibleTo($coordinator)))->toBe([$this->westTicket->id]);
 });
@@ -52,7 +52,7 @@ it('shows an office user with no area nothing', function () {
 
 it('shows a technician only the tickets they are or were assigned to, even inside their own area', function () {
     $tech = Fx::technician();
-    $sameAreaTicket = Fx::ticket(Fx::terminal('W2', $this->west['service_point']));
+    $sameAreaTicket = Fx::ticket(Fx::terminal('W2', $this->west['area']));
 
     app(SyncUserLocationScopes::class)->handle($tech, [$this->west['province']->id]);
     app(AssignTicket::class)->handle($this->westTicket, $tech, Fx::dispatcher());

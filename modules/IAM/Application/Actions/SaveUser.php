@@ -28,11 +28,18 @@ final class SaveUser
     public function __construct(private readonly RevokeAllUserSessions $revoke) {}
 
     /**
-     * @param  array{name: string, email: string, phone?: string|null, employee_no?: string|null, user_type: string, is_active: bool, roles: list<string>}  $data
+     * @param  array{name: string, email: string, phone?: string|null, employee_no?: string|null, user_code?: string|null, user_type: string, is_active: bool, roles: list<string>}  $data
      * @return array{user: User, password: string|null} the password is returned once, only for a new user
      */
     public function handle(?User $user, array $data, User $actor): array
     {
+        // An engineer is known by a code (ENG-0012); office staff may have none.
+        $userCode = isset($data['user_code']) && trim($data['user_code']) !== '' ? mb_strtoupper(trim($data['user_code'])) : null;
+
+        if ($data['user_type'] === UserType::Technician->value && $userCode === null) {
+            throw ValidationException::withMessages(['user_code' => 'Kode user wajib diisi untuk engineer.']);
+        }
+
         $roles = Role::query()->whereIn('name', $data['roles'])->where('guard_name', 'web')->get();
 
         if ($roles->count() !== count(array_unique($data['roles']))) {
@@ -45,7 +52,7 @@ final class SaveUser
 
         $this->assertRolesAllowed($user, array_values(array_map(strval(...), $roles->pluck('name')->all())), $roles, $actor, (bool) $data['is_active']);
 
-        return DB::transaction(function () use ($user, $data, $roles, $actor): array {
+        return DB::transaction(function () use ($user, $data, $roles, $actor, $userCode): array {
             $created = ! $user instanceof User;
             $password = null;
 
@@ -62,6 +69,7 @@ final class SaveUser
                 'email' => Str::lower(trim($data['email'])),
                 'phone' => $data['phone'] ?? null,
                 'employee_no' => $data['employee_no'] ?? null,
+                'user_code' => $userCode,
                 'user_type' => UserType::from($data['user_type']),
                 'is_active' => $data['is_active'],
             ])->save();

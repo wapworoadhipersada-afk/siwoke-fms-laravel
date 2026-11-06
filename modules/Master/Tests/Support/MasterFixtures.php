@@ -33,31 +33,31 @@ final class MasterFixtures
         return app(CreateVendor::class)->handle(['code' => $code, 'name' => "Bank {$code}"]);
     }
 
-    public static function location(LocationType $type, ?Location $parent = null, ?string $code = null): Location
+    public static function location(LocationType $type, ?Location $parent = null, ?string $code = null, ?Vendor $vendor = null): Location
     {
         $code ??= strtoupper($type->value).'-'.self::next();
 
         return app(CreateLocation::class)->handle([
             'type' => $type,
             'parent_id' => $parent?->id,
+            'vendor_id' => $vendor?->id,
             'code' => $code,
             'name' => "{$type->label()} {$code}",
         ]);
     }
 
     /**
-     * A full chain Province → City → Area → Service Point.
+     * A full chain Province → Service Point → Managed Area. Without a vendor the service point is shared by all.
      *
-     * @return array{province: Location, city: Location, area: Location, service_point: Location}
+     * @return array{province: Location, service_point: Location, area: Location}
      */
-    public static function chain(): array
+    public static function chain(?Vendor $vendor = null): array
     {
         $province = self::location(LocationType::Province);
-        $city = self::location(LocationType::City, $province);
-        $area = self::location(LocationType::Area, $city);
-        $servicePoint = self::location(LocationType::ServicePoint, $area);
+        $servicePoint = self::location(LocationType::ServicePoint, $province, vendor: $vendor);
+        $area = self::location(LocationType::Area, $servicePoint);
 
-        return ['province' => $province, 'city' => $city, 'area' => $area, 'service_point' => $servicePoint];
+        return ['province' => $province, 'service_point' => $servicePoint, 'area' => $area];
     }
 
     public static function merchant(Vendor $vendor, ?string $code = null): Merchant
@@ -67,11 +67,11 @@ final class MasterFixtures
         return app(CreateMerchant::class)->handle(['vendor_id' => $vendor->id, 'merchant_code' => $code, 'name' => "Toko {$code}"]);
     }
 
-    public static function site(Merchant $merchant, Location $servicePoint): MerchantSite
+    public static function site(Merchant $merchant, Location $area): MerchantSite
     {
         return app(CreateMerchantSite::class)->handle([
             'merchant_id' => $merchant->id,
-            'location_id' => $servicePoint->id,
+            'location_id' => $area->id,
             'address' => 'Jl. Contoh No. '.self::next(),
         ]);
     }
@@ -85,7 +85,7 @@ final class MasterFixtures
     }
 
     /**
-     * A terminal standing in the given service point, under a fresh merchant of the given vendor.
+     * A terminal standing in the given managed area, under a fresh merchant of the given vendor.
      */
     public static function terminalIn(Vendor $vendor, Location $servicePoint): Terminal
     {

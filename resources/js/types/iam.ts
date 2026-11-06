@@ -32,6 +32,8 @@ export type UserRow = {
     name: string;
     email: string;
     employee_no: string | null;
+    user_code: string | null;
+    photo_url: string | null;
     user_type_label: string;
     roles: string[];
     is_active: boolean;
@@ -44,6 +46,9 @@ export type ManagedUser = {
     email: string;
     phone: string | null;
     employee_no: string | null;
+    user_code: string | null;
+    photo_url: string | null;
+    photo_full_url: string | null;
     user_type: string;
     is_active: boolean;
     roles: string[];

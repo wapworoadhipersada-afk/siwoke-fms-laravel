@@ -23,7 +23,7 @@ final class BuildSnapshot
     public function handle(TicketVisit $visit, string $number, int $revision): array
     {
         $ticket = Ticket::query()
-            ->with(['type', 'vendor', 'terminal', 'site.merchant', 'site.location'])
+            ->with(['type', 'vendor', 'terminal', 'site.merchant', 'site.location.parent.parent'])
             ->findOrFail($visit->ticket_id);
         $visit->loadMissing(['technician', 'reasonCode']);
         $technician = $visit->technician;
@@ -50,7 +50,9 @@ final class BuildSnapshot
             'site' => [
                 'name' => $ticket->site->name,
                 'address' => $ticket->site->address,
-                'service_point' => $ticket->site->location->name,
+                'area' => $ticket->site->location->name,
+                'service_point' => $ticket->site->location->parent?->name,
+                'province' => $ticket->site->location->parent?->parent?->name,
                 'pic_name' => $ticket->site->pic_name,
                 'pic_phone' => $ticket->site->pic_phone,
             ],

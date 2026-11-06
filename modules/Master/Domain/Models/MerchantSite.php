@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Modules\Master\Application\Services\VendorAccess;
 use Modules\Shared\Domain\Concerns\HasPublicUlid;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
@@ -76,7 +77,11 @@ class MerchantSite extends Model
      */
     public function scopeVisibleTo(Builder $query, User $user): Builder
     {
-        return $query->whereIn('merchant_sites.location_id', Location::query()->visibleTo($user)->select('locations.id'));
+        $merchants = app(VendorAccess::class)->constrain(Merchant::query(), $user, 'merchants.vendor_id')->select('merchants.id');
+
+        return $query
+            ->whereIn('merchant_sites.merchant_id', $merchants)
+            ->whereIn('merchant_sites.location_id', Location::query()->visibleTo($user)->select('locations.id'));
     }
 
     public function getActivitylogOptions(): LogOptions

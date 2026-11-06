@@ -60,7 +60,7 @@ final class AssetFixtures
 
     public static function warehouse(?Location $location = null): Warehouse
     {
-        $location ??= MasterFixtures::chain()['service_point'];
+        $location ??= MasterFixtures::chain()['area'];
 
         return app(CreateWarehouse::class)->handle([
             'location_id' => $location->id,

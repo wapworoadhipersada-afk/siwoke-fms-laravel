@@ -11,6 +11,7 @@ use Modules\Asset\Application\Services\HolderLabeler;
 use Modules\Asset\Domain\Models\AssetStock;
 use Modules\Asset\Domain\ValueObjects\Holder;
 use Modules\IAM\Domain\Permissions;
+use Modules\Master\Application\Services\VendorAccess;
 use Modules\Master\Domain\Models\Vendor;
 use Modules\Shared\Http\ModuleController;
 
@@ -27,6 +28,7 @@ final class StockController extends ModuleController
 
         $page = AssetStock::query()
             ->visibleTo($this->user())
+            ->tap(fn ($focused) => app(VendorAccess::class)->focus($focused, $this->user(), 'asset_stocks.owner_vendor_id'))
             ->with(['model', 'vendor'])
             ->where('quantity', '>', 0)
             ->when($vendor !== '', fn ($query) => $query->whereHas('vendor', fn ($query) => $query->where('ulid', $vendor)))

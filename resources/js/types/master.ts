@@ -41,6 +41,7 @@ export type LocationRow = {
     code: string;
     name: string;
     parent: string | null;
+    vendor: string | null;
     is_active: boolean;
 };
 
@@ -49,6 +50,8 @@ export type LocationForm = {
     type: string;
     type_label: string;
     parent: string | null;
+    vendor: string | null;
+    vendor_label: string | null;
     code: string;
     name: string;
     address: string | null;
@@ -87,8 +90,9 @@ export type SiteDetail = {
     ulid: string;
     name: string | null;
     address: string;
-    service_point: string;
-    area: string | null;
+    area: string;
+    service_point: string | null;
+    province: string | null;
     latitude: string | null;
     longitude: string | null;
     pic_name: string | null;
@@ -116,7 +120,9 @@ export type TerminalRow = {
     merchant: string;
     merchant_ulid: string;
     address: string;
-    service_point: string;
+    area: string;
+    service_point: string | null;
+    province: string | null;
     status: string;
     status_label: string;
 };

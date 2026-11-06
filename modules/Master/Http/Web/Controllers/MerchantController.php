@@ -13,6 +13,7 @@ use Modules\IAM\Domain\Permissions;
 use Modules\Master\Application\Actions\CreateMerchant;
 use Modules\Master\Application\Actions\DeleteMerchant;
 use Modules\Master\Application\Actions\UpdateMerchant;
+use Modules\Master\Application\Services\VendorAccess;
 use Modules\Master\Domain\Models\Merchant;
 use Modules\Master\Domain\Models\MerchantSite;
 use Modules\Master\Domain\Models\Terminal;
@@ -30,6 +31,7 @@ final class MerchantController extends MasterController
 
         $merchants = Merchant::query()
             ->visibleTo($this->user())
+            ->tap(fn ($focused) => app(VendorAccess::class)->focus($focused, $this->user(), 'merchants.vendor_id'))
             ->with('vendor')
             ->withCount('sites')
             ->when($vendorUlid !== '', fn ($query) => $query->whereHas('vendor', fn ($query) => $query->where('ulid', $vendorUlid)))
@@ -100,15 +102,16 @@ final class MerchantController extends MasterController
         $sites = MerchantSite::query()
             ->visibleTo($user)
             ->where('merchant_id', $merchant->id)
-            ->with(['location.parent', 'terminals'])
+            ->with(['location.parent.parent', 'terminals'])
             ->orderBy('id')
             ->get()
             ->map(fn (MerchantSite $site): array => [
                 'ulid' => $site->ulid,
                 'name' => $site->name,
                 'address' => $site->address,
-                'service_point' => $site->location->name,
-                'area' => $site->location->parent?->name,
+                'area' => $site->location->name,
+                'service_point' => $site->location->parent?->name,
+                'province' => $site->location->parent?->parent?->name,
                 'latitude' => $site->latitude,
                 'longitude' => $site->longitude,
                 'pic_name' => $site->pic_name,

@@ -30,6 +30,9 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $email
  * @property string|null $phone
  * @property string|null $employee_no
+ * @property string|null $user_code
+ * @property string|null $photo_path
+ * @property string|null $photo_thumb_path
  * @property UserType $user_type
  * @property bool $is_active
  * @property Carbon|null $last_login_at
@@ -43,8 +46,8 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  */
-#[Fillable(['name', 'email', 'password', 'phone', 'employee_no', 'user_type', 'is_active'])]
-#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
+#[Fillable(['name', 'email', 'password', 'phone', 'employee_no', 'user_code', 'user_type', 'is_active'])]
+#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token', 'photo_path', 'photo_thumb_path'])]
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
@@ -76,6 +79,19 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function getRouteKeyName(): string
     {
         return 'ulid';
+    }
+
+    /**
+     * @var list<string>
+     */
+    protected $appends = ['photo_url'];
+
+    /**
+     * Where the profile picture is served from (through a controller that checks who is asking), or null.
+     */
+    public function getPhotoUrlAttribute(): ?string
+    {
+        return $this->photo_path === null ? null : url('/iam/users/'.$this->ulid.'/photo?thumb=1', secure: false);
     }
 
     /**

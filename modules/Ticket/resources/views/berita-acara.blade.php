@@ -45,7 +45,8 @@
     <h2>Merchant dan Terminal</h2>
     <table class="grid">
         <tr><td class="label">Merchant</td><td>{{ $ba['merchant']['name'] }}</td><td class="label">Kode merchant</td><td>{{ $ba['merchant']['code'] }}</td></tr>
-        <tr><td class="label">TID</td><td>{{ $ba['tid'] }}</td><td class="label">Titik layanan</td><td>{{ $ba['site']['service_point'] }}</td></tr>
+        <tr><td class="label">TID</td><td>{{ $ba['tid'] }}</td><td class="label">Service point</td><td>{{ $ba['site']['service_point'] ?? '-' }}</td></tr>
+        <tr><td class="label">Area kelolaan</td><td>{{ $ba['site']['area'] ?? '-' }}</td><td class="label">Provinsi</td><td>{{ $ba['site']['province'] ?? '-' }}</td></tr>
         <tr><td class="label">Alamat</td><td colspan="3">{{ $ba['site']['address'] }}</td></tr>
         <tr><td class="label">PIC di lokasi</td><td>{{ $ba['site']['pic_name'] ?? '-' }}</td><td class="label">Telepon PIC</td><td>{{ $ba['site']['pic_phone'] ?? ($ba['merchant']['phone'] ?? '-') }}</td></tr>
     </table>

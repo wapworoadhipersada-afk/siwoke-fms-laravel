@@ -9,6 +9,7 @@ use Modules\Asset\Domain\Enums\AssetStatus;
 use Modules\Asset\Domain\Models\Asset;
 use Modules\Asset\Domain\Models\AssetModel;
 use Modules\Asset\Domain\Models\AssetStock;
+use Modules\Master\Application\Services\VendorAccess;
 
 /**
  * Asset figures for the dashboard, limited to the holders (warehouses, technicians, terminals) the user may see.
@@ -20,7 +21,7 @@ final class AssetStatistics
      */
     public function handle(User $user): array
     {
-        $counts = Asset::query()->visibleTo($user)->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status');
+        $counts = Asset::query()->visibleTo($user)->tap(fn ($focused) => app(VendorAccess::class)->focus($focused, $user, 'assets.owner_vendor_id'))->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status');
 
         $byStatus = [];
 
@@ -29,6 +30,7 @@ final class AssetStatistics
         }
 
         $stock = AssetStock::query()->visibleTo($user)
+            ->tap(fn ($focused) => app(VendorAccess::class)->focus($focused, $user, 'asset_stocks.owner_vendor_id'))
             ->selectRaw('asset_model_id, sum(quantity) as total')
             ->groupBy('asset_model_id')
             ->havingRaw('sum(quantity) > 0')

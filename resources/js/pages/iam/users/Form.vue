@@ -2,6 +2,7 @@
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import UserController from '@/actions/Modules/IAM/Http/Web/Controllers/UserController';
+import UserPhotoController from '@/actions/Modules/IAM/Http/Web/Controllers/UserPhotoController';
 import UserScopeController from '@/actions/Modules/Master/Http/Web/Controllers/UserScopeController';
 import InputError from '@/components/InputError.vue';
 import FormSelect from '@/components/master/FormSelect.vue';
@@ -35,18 +36,52 @@ const typeOptions = computed(() => props.types.map((type) => ({ value: type.valu
 <template>
     <Head :title="title" />
 
-    <div class="flex flex-1 flex-col gap-6">
+    <div class="flex flex-1 flex-col gap-6 p-4">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <h1 class="text-xl font-semibold text-foreground">{{ title }}</h1>
             <div v-if="managed" class="flex flex-wrap gap-2">
                 <Button variant="outline" as-child>
-                    <Link :href="UserScopeController.edit(managed.ulid)">Atur area kerja</Link>
+                    <Link :href="UserScopeController.edit(managed.ulid)">Atur area dan vendor</Link>
                 </Button>
                 <Form v-bind="UserController.resetPassword.form(managed.ulid)" @submit="confirmReset">
                     <Button type="submit" variant="outline">Atur ulang password</Button>
                 </Form>
             </div>
         </div>
+
+        <section v-if="managed" class="flex max-w-3xl items-center gap-4 rounded-xl border bg-card p-5">
+            <img
+                v-if="managed.photo_full_url"
+                :src="managed.photo_full_url"
+                :alt="`Foto ${managed.name}`"
+                class="size-20 rounded-full border object-cover"
+            />
+            <div
+                v-else
+                class="flex size-20 items-center justify-center rounded-full border bg-muted text-xl font-semibold text-muted-foreground"
+            >
+                {{ managed.name.slice(0, 1).toUpperCase() }}
+            </div>
+            <div class="flex-1 space-y-2">
+                <p class="text-sm font-medium">Foto profil</p>
+                <Form
+                    v-bind="UserPhotoController.update.form(managed.ulid)"
+                    class="flex flex-wrap items-center gap-2"
+                    v-slot="{ errors, processing }"
+                >
+                    <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" required class="text-sm" />
+                    <Button type="submit" size="sm" :disabled="processing">Unggah</Button>
+                    <InputError :message="errors.photo" />
+                </Form>
+                <Form
+                    v-if="managed.photo_full_url"
+                    v-bind="UserPhotoController.destroy.form(managed.ulid)"
+                    :options="{ preserveScroll: true }"
+                >
+                    <Button type="submit" variant="ghost" size="sm">Hapus foto</Button>
+                </Form>
+            </div>
+        </section>
 
         <Form v-bind="form" class="rounded-xl border bg-card max-w-3xl space-y-5 p-5 md:p-6" v-slot="{ errors, processing }">
             <div class="grid gap-5 sm:grid-cols-2">
@@ -64,6 +99,11 @@ const typeOptions = computed(() => props.types.map((type) => ({ value: type.valu
                     <Label for="phone">Telepon</Label>
                     <Input id="phone" name="phone" :default-value="managed?.phone ?? ''" />
                     <InputError :message="errors.phone" />
+                </div>
+                <div class="grid gap-2">
+                    <Label for="user_code">Kode user (wajib untuk engineer)</Label>
+                    <Input id="user_code" name="user_code" :default-value="managed?.user_code ?? ''" placeholder="ENG-0012" />
+                    <InputError :message="errors.user_code" />
                 </div>
                 <div class="grid gap-2">
                     <Label for="employee_no">NIK / nomor pegawai</Label>

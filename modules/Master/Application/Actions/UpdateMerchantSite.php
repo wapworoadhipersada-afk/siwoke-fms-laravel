@@ -17,7 +17,7 @@ final class UpdateMerchantSite
     public function handle(MerchantSite $site, array $data): MerchantSite
     {
         if (isset($data['location_id']) && $data['location_id'] !== $site->location_id) {
-            CreateMerchantSite::assertServicePoint($data['location_id']);
+            CreateMerchantSite::assertArea($data['location_id'], $site->merchant_id);
         }
 
         $site->fill($data)->save();

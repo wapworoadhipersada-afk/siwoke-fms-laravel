@@ -48,6 +48,8 @@ final class UserController extends ModuleController
                 'name' => $user->name,
                 'email' => $user->email,
                 'employee_no' => $user->employee_no,
+                'user_code' => $user->user_code,
+                'photo_url' => $user->photo_url,
                 'user_type_label' => $user->user_type->label(),
                 'roles' => array_values($user->roles->map(fn (Model $item): string => (string) ($item->getAttribute('label') ?? $item->getAttribute('name')))->all()),
                 'is_active' => $user->is_active,
@@ -96,6 +98,9 @@ final class UserController extends ModuleController
                 'email' => $managedUser->email,
                 'phone' => $managedUser->phone,
                 'employee_no' => $managedUser->employee_no,
+                'user_code' => $managedUser->user_code,
+                'photo_url' => $managedUser->photo_url,
+                'photo_full_url' => $managedUser->photo_path === null ? null : '/iam/users/'.$managedUser->ulid.'/photo',
                 'user_type' => $managedUser->user_type->value,
                 'is_active' => $managedUser->is_active,
                 'roles' => $managedUser->roles()->pluck('name')->values()->all(),
@@ -130,19 +135,20 @@ final class UserController extends ModuleController
     }
 
     /**
-     * @return array{name: string, email: string, phone?: string|null, employee_no?: string|null, user_type: string, is_active: bool, roles: list<string>}
+     * @return array{name: string, email: string, phone?: string|null, employee_no?: string|null, user_code?: string|null, user_type: string, is_active: bool, roles: list<string>}
      */
     private function validated(Request $request, ?User $managed): array
     {
         // The database treats emails case-insensitively, so the rule must too; otherwise a duplicate slips past it.
         $request->merge(['email' => mb_strtolower(trim((string) $request->input('email')))]);
 
-        /** @var array{name: string, email: string, phone?: string|null, employee_no?: string|null, user_type: string, is_active?: bool|null, roles?: list<string>|null} $data */
+        /** @var array{name: string, email: string, phone?: string|null, employee_no?: string|null, user_code?: string|null, user_type: string, is_active?: bool|null, roles?: list<string>|null} $data */
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email:rfc', 'max:255', Rule::unique('users', 'email')->ignore($managed?->id)],
             'phone' => ['nullable', 'string', 'max:30'],
             'employee_no' => ['nullable', 'string', 'max:40', Rule::unique('users', 'employee_no')->ignore($managed?->id)],
+            'user_code' => ['nullable', 'string', 'max:30', 'regex:/^[A-Za-z0-9._-]+$/', Rule::unique('users', 'user_code')->ignore($managed?->id)],
             'user_type' => ['required', Rule::enum(UserType::class)],
             'is_active' => ['nullable', 'boolean'],
             'roles' => ['required', 'array', 'min:1'],

@@ -23,7 +23,7 @@ beforeEach(function () {
     $this->warehouse = Fx::warehouse();
     $this->tech = Fx::technician();
     $leader = Fx::approver();
-    $terminal = MasterFixtures::terminalIn($vendor, MasterFixtures::chain()['service_point']);
+    $terminal = MasterFixtures::terminalIn($vendor, MasterFixtures::chain()['area']);
 
     [$this->a, $this->b, $this->c] = Fx::receive(Fx::edcModel(), $vendor, $this->warehouse, ['SN-A', 'SN-B', 'SN-C'], $leader);
     Fx::issue($this->warehouse, $this->tech, [$this->a, $this->b], $leader);

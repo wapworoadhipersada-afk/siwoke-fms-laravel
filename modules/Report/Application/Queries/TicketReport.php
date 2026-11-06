@@ -7,6 +7,7 @@ namespace Modules\Report\Application\Queries;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
+use Modules\Master\Application\Services\VendorAccess;
 use Modules\Ticket\Domain\Enums\TicketStatus;
 use Modules\Ticket\Domain\Models\Ticket;
 use Modules\Ticket\Domain\Models\TicketVisit;
@@ -40,6 +41,7 @@ final class TicketReport
 
         return Ticket::query()
             ->visibleTo($user)
+            ->tap(fn ($focused) => app(VendorAccess::class)->focus($focused, $user, 'tickets.vendor_id'))
             ->with(['vendor', 'type', 'terminal', 'site.merchant', 'site.location', 'visits.technician'])
             ->when($from !== null, fn (Builder $query) => $query->where('received_at', '>=', $from?->startOfDay()))
             ->when($to !== null, fn (Builder $query) => $query->where('received_at', '<=', $to?->endOfDay()))

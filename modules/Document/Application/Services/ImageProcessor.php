@@ -69,6 +69,70 @@ final class ImageProcessor
     }
 
     /**
+     * A profile picture: the same distrust of the upload as any other image, then cropped to a centred
+     * square and shrunk, so every avatar is small, the same shape, and free of anything hidden in the original.
+     */
+    public function avatar(string $bytes, int $edge = 512): ProcessedImage
+    {
+        $mime = (string) (new finfo(FILEINFO_MIME_TYPE))->buffer($bytes);
+
+        if (! in_array($mime, self::ALLOWED_MIME, true)) {
+            throw $this->fail('Hanya gambar JPG, PNG, atau WebP yang diterima.');
+        }
+
+        $header = @getimagesizefromstring($bytes);
+
+        if ($header === false) {
+            throw $this->fail('File gambar rusak atau tidak dapat dibaca.');
+        }
+
+        [$width, $height] = $header;
+
+        $this->assertDimensions($width, $height);
+        $this->assertFitsInMemory($width, $height);
+
+        $image = @imagecreatefromstring($bytes);
+
+        if (! $image instanceof GdImage) {
+            throw $this->fail('File gambar rusak atau tidak dapat dibaca.');
+        }
+
+        if ($mime === 'image/jpeg') {
+            $image = $this->applyOrientation($image, $bytes);
+        }
+
+        $image = $this->squareOf($this->flattenOnWhite($image), $edge);
+        $thumbnail = $this->squareOf($image, 96);
+
+        return new ProcessedImage(
+            bytes: $this->encodeJpeg($image, (int) config('documents.photo_quality')),
+            mime: 'image/jpeg',
+            extension: 'jpg',
+            width: imagesx($image),
+            height: imagesy($image),
+            thumbnailBytes: $this->encodeJpeg($thumbnail, (int) config('documents.thumbnail_quality')),
+        );
+    }
+
+    private function squareOf(GdImage $image, int $edge): GdImage
+    {
+        $side = min(imagesx($image), imagesy($image));
+        $cropped = imagecrop($image, ['x' => intdiv(imagesx($image) - $side, 2), 'y' => intdiv(imagesy($image) - $side, 2), 'width' => $side, 'height' => $side]);
+
+        if (! $cropped instanceof GdImage) {
+            return $image;
+        }
+
+        if ($side <= $edge) {
+            return $cropped;
+        }
+
+        $scaled = imagescale($cropped, $edge, $edge, IMG_BICUBIC);
+
+        return $scaled instanceof GdImage ? $scaled : $cropped;
+    }
+
+    /**
      * Judged from the header, before a single pixel is decoded, so a tiny file that claims to be
      * enormous cannot exhaust memory.
      */
