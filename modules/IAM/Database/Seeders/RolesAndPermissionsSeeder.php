@@ -12,8 +12,8 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 /**
- * Idempotent: safe to run on every deploy. It creates what is missing and
- * re-syncs each role to the matrix below, so the code stays the source of truth.
+ * Idempotent: safe to run on every deploy. It creates what is missing and re-syncs each built-in role to the
+ * matrix below, unless an administrator has edited that role's permissions on the role screen.
  */
 class RolesAndPermissionsSeeder extends Seeder
 {
@@ -25,8 +25,18 @@ class RolesAndPermissionsSeeder extends Seeder
             Permission::findOrCreate($name, 'web');
         }
 
-        foreach ($this->matrix() as $role => $permissions) {
-            Role::findOrCreate($role, 'web')->syncPermissions($permissions);
+        foreach ($this->matrix() as $name => $permissions) {
+            $role = Role::findOrCreate($name, 'web');
+            $profile = RoleName::tryFrom($name);
+
+            // Built-in roles get a readable name and are protected from deletion, whatever an administrator did before.
+            $role->forceFill(['is_system' => true, 'label' => $role->getAttribute('label') ?? $profile?->label()])->save();
+
+            // A role an administrator has edited is theirs now; a deploy must not put it back to the defaults.
+            // Super Admin is the exception: it is always everything.
+            if (! (bool) $role->getAttribute('is_customized') || $name === RoleName::SuperAdmin->value) {
+                $role->syncPermissions($permissions);
+            }
         }
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();

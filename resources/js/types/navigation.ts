@@ -12,3 +12,16 @@ export type NavItem = {
     icon?: LucideIcon;
     isActive?: boolean;
 };
+
+// The sidebar as the server builds it for the signed-in person.
+export type NavLeaf = {
+    id: number;
+    key: string;
+    label: string;
+    icon: string | null;
+    href: string | null;
+};
+
+export type NavEntry = NavLeaf & { children: NavLeaf[] };
+
+export type NavSection = { label: string; items: NavEntry[] };

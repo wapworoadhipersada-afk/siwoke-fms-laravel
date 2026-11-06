@@ -20,6 +20,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Modules\IAM\Application\Listeners\LogAccessChange;
 use Modules\IAM\Application\Listeners\LogWebAuthentication;
+use Modules\IAM\Console\SyncNavigationCommand;
 use Modules\IAM\Domain\Enums\RoleName;
 use Modules\IAM\Http\Api\V1\Middleware\EnsureMobileSession;
 use Spatie\Permission\Events\PermissionAttachedEvent;
@@ -37,6 +38,10 @@ final class IAMServiceProvider extends ServiceProvider
         $this->registerAuditListeners();
         $this->registerRateLimiters();
         $this->registerRoutes();
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([SyncNavigationCommand::class]);
+        }
     }
 
     /**
@@ -76,6 +81,8 @@ final class IAMServiceProvider extends ServiceProvider
     private function registerRoutes(): void
     {
         $this->app->make(Router::class)->aliasMiddleware('mobile.session', EnsureMobileSession::class);
+
+        $this->loadRoutesFrom(__DIR__.'/routes/web.php');
 
         Route::middleware('api')
             ->prefix('api/mobile/v1')

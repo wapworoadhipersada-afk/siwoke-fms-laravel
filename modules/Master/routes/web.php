@@ -7,6 +7,7 @@ use Modules\Master\Http\Web\Controllers\LocationController;
 use Modules\Master\Http\Web\Controllers\MerchantController;
 use Modules\Master\Http\Web\Controllers\MerchantSiteController;
 use Modules\Master\Http\Web\Controllers\TerminalController;
+use Modules\Master\Http\Web\Controllers\UserScopeController;
 use Modules\Master\Http\Web\Controllers\VendorController;
 
 Route::middleware(['web', 'auth', 'verified'])->prefix('master')->name('master.')->group(function () {
@@ -15,4 +16,6 @@ Route::middleware(['web', 'auth', 'verified'])->prefix('master')->name('master.'
     Route::resource('merchants', MerchantController::class);
     Route::resource('merchants.sites', MerchantSiteController::class)->shallow()->only(['create', 'store', 'edit', 'update', 'destroy']);
     Route::resource('terminals', TerminalController::class)->except('show');
+    Route::get('user-scopes/{managedUser}', [UserScopeController::class, 'edit'])->name('user-scopes.edit');
+    Route::put('user-scopes/{managedUser}', [UserScopeController::class, 'update'])->name('user-scopes.update');
 });

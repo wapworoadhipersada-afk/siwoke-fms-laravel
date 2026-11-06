@@ -70,6 +70,17 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     /**
      * @return HasMany<Device, $this>
      */
+    /**
+     * People are addressed by their public ULID in links, never by their internal number.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'ulid';
+    }
+
+    /**
+     * @return HasMany<Device, $this>
+     */
     public function devices(): HasMany
     {
         return $this->hasMany(Device::class);

@@ -1,21 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import type { Component } from 'vue';
-import type { NavItem as NavItemType } from '@/types';
 import { computed, ref, watch } from 'vue';
-import AssetController from '@/actions/Modules/Asset/Http/Web/Controllers/AssetController';
-import AssetModelController from '@/actions/Modules/Asset/Http/Web/Controllers/AssetModelController';
-import HandoverController from '@/actions/Modules/Asset/Http/Web/Controllers/HandoverController';
-import StockController from '@/actions/Modules/Asset/Http/Web/Controllers/StockController';
-import WarehouseController from '@/actions/Modules/Asset/Http/Web/Controllers/WarehouseController';
-import IntegrationClientController from '@/actions/Modules/Integration/Http/Web/Controllers/IntegrationClientController';
-import IntegrationLogController from '@/actions/Modules/Integration/Http/Web/Controllers/IntegrationLogController';
-import LocationController from '@/actions/Modules/Master/Http/Web/Controllers/LocationController';
-import MerchantController from '@/actions/Modules/Master/Http/Web/Controllers/MerchantController';
-import TerminalController from '@/actions/Modules/Master/Http/Web/Controllers/TerminalController';
-import VendorController from '@/actions/Modules/Master/Http/Web/Controllers/VendorController';
-import TicketReportController from '@/actions/Modules/Report/Http/Web/Controllers/TicketReportController';
-import TicketController from '@/actions/Modules/Ticket/Http/Web/Controllers/TicketController';
 import {
     Sidebar,
     SidebarContent,
@@ -26,109 +11,30 @@ import {
     useSidebar,
 } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
-import {
-    BoxIcon,
-    ChevronDownIcon,
-    HorizontalDotsIcon,
-    LayoutGridIcon,
-    ListIcon,
-    PluginIcon,
-    TableIcon,
-} from '@/icons/layout';
+import { ChevronDownIcon, HorizontalDotsIcon } from '@/icons/layout';
+import { iconFor } from '@/lib/navIcons';
 import { cn } from '@/lib/utils';
 import { dashboard } from '@/routes';
-
-type Href = NavItemType['href'];
-type SubItem = { name: string; href: Href; permission: string };
-type NavItem = {
-    name: string;
-    icon: Component;
-    href?: Href;
-    subItems?: SubItem[];
-};
-type Section = { label: string; items: NavItem[] };
+import type { NavEntry, NavSection } from '@/types';
 
 const page = usePage();
-const permissions = computed(() => page.props.auth.permissions);
 const { state, isMobile } = useSidebar();
 const { isCurrentUrl } = useCurrentUrl();
+
+// The sidebar is decided on the server (roles, permissions, order, names, icons set by an administrator).
+const sections = computed<NavSection[]>(
+    () => (page.props.navigation ?? []) as NavSection[],
+);
 
 // The wide sidebar shows names and groups; the narrow one shows only icons.
 const showContent = computed(
     () => state.value === 'expanded' || isMobile.value,
 );
 
-// Hiding a link is only a convenience; the server checks every request.
-const sections = computed<Section[]>(() => {
-    const raw: Section[] = [
-        {
-            label: 'Menu',
-            items: [
-                { name: 'Dashboard', icon: LayoutGridIcon, href: dashboard() },
-                {
-                    name: 'Operasional',
-                    icon: ListIcon,
-                    subItems: [
-                        { name: 'Tiket', href: TicketController.index(), permission: 'ticket.view' },
-                        { name: 'Laporan tiket', href: TicketReportController.index(), permission: 'report.view' },
-                    ],
-                },
-                {
-                    name: 'Master Data',
-                    icon: TableIcon,
-                    subItems: [
-                        { name: 'Vendor', href: VendorController.index(), permission: 'master.vendor.view' },
-                        { name: 'Lokasi', href: LocationController.index(), permission: 'master.location.view' },
-                        { name: 'Merchant', href: MerchantController.index(), permission: 'master.merchant.view' },
-                        { name: 'TID', href: TerminalController.index(), permission: 'master.terminal.view' },
-                    ],
-                },
-                {
-                    name: 'Aset',
-                    icon: BoxIcon,
-                    subItems: [
-                        { name: 'Aset', href: AssetController.index(), permission: 'asset.view' },
-                        { name: 'Stok', href: StockController.index(), permission: 'asset.view' },
-                        { name: 'Serah-terima', href: HandoverController.index(), permission: 'asset.view' },
-                        { name: 'Gudang', href: WarehouseController.index(), permission: 'asset.view' },
-                        { name: 'Jenis aset', href: AssetModelController.index(), permission: 'asset.view' },
-                    ],
-                },
-            ],
-        },
-        {
-            label: 'Integrasi',
-            items: [
-                {
-                    name: 'Vendor API',
-                    icon: PluginIcon,
-                    subItems: [
-                        { name: 'Klien integrasi', href: IntegrationClientController.index(), permission: 'integration.client.manage' },
-                        { name: 'Log integrasi', href: IntegrationLogController.index(), permission: 'integration.log.view' },
-                    ],
-                },
-            ],
-        },
-    ];
-
-    return raw
-        .map((section) => ({
-            ...section,
-            items: section.items
-                .map((item) => ({
-                    ...item,
-                    subItems: item.subItems?.filter((sub) =>
-                        permissions.value.includes(sub.permission),
-                    ),
-                }))
-                .filter((item) => !item.subItems || item.subItems.length > 0),
-        }))
-        .filter((section) => section.items.length > 0);
-});
-
-const isActive = (href: NonNullable<Href>): boolean => isCurrentUrl(href);
-const hasActiveChild = (item: NavItem): boolean =>
-    Boolean(item.subItems?.some((sub) => isActive(sub.href)));
+const isActive = (href: string | null): boolean =>
+    href !== null && isCurrentUrl(href);
+const hasActiveChild = (item: NavEntry): boolean =>
+    item.children.some((child) => isActive(child.href));
 
 // A group opens by itself when it holds the current page, and can be opened or closed by hand.
 const openGroup = ref<string | null>(null);
@@ -138,18 +44,18 @@ const syncOpenGroup = (): void => {
         .flatMap((section) => section.items)
         .find((item) => hasActiveChild(item));
 
-    openGroup.value = current?.name ?? null;
+    openGroup.value = current?.key ?? null;
 };
 
 syncOpenGroup();
 watch(() => page.url, syncOpenGroup);
 
-const toggle = (name: string): void => {
-    openGroup.value = openGroup.value === name ? null : name;
+const toggle = (key: string): void => {
+    openGroup.value = openGroup.value === key ? null : key;
 };
 
-const groupActive = (item: NavItem): boolean =>
-    openGroup.value === item.name || hasActiveChild(item);
+const groupActive = (item: NavEntry): boolean =>
+    openGroup.value === item.key || hasActiveChild(item);
 </script>
 
 <template>
@@ -176,29 +82,30 @@ const groupActive = (item: NavItem): boolean =>
                         </h2>
 
                         <SidebarMenu class="gap-1">
-                            <SidebarMenuItem v-for="item in section.items" :key="item.name">
-                                <template v-if="item.subItems">
+                            <SidebarMenuItem v-for="item in section.items" :key="item.key">
+                                <template v-if="item.children.length > 0">
                                     <button
                                         type="button"
                                         :class="cn('group menu-item cursor-pointer', groupActive(item) ? 'menu-item-active' : 'menu-item-inactive', showContent ? 'lg:justify-start' : 'lg:justify-center')"
-                                        @click="toggle(item.name)"
+                                        @click="toggle(item.key)"
                                     >
                                         <span :class="groupActive(item) ? 'menu-item-icon-active' : 'menu-item-icon-inactive'">
-                                            <component :is="item.icon" class="size-6 stroke-[1.5px]" />
+                                            <component :is="iconFor(item.icon)" class="size-6 stroke-[1.5px]" />
                                         </span>
-                                        <span v-if="showContent" class="menu-item-text">{{ item.name }}</span>
+                                        <span v-if="showContent" class="menu-item-text">{{ item.label }}</span>
                                         <ChevronDownIcon
                                             v-if="showContent"
-                                            :class="cn('ms-auto h-5 w-5 transition-transform duration-200', openGroup === item.name ? 'rotate-180 text-brand-500' : '')"
+                                            :class="cn('ms-auto h-5 w-5 transition-transform duration-200', openGroup === item.key ? 'rotate-180 text-brand-500' : '')"
                                         />
                                     </button>
-                                    <ul v-if="showContent && openGroup === item.name" class="ms-9 mt-2 space-y-1">
-                                        <li v-for="sub in item.subItems" :key="sub.name">
+                                    <ul v-if="showContent && openGroup === item.key" class="ms-9 mt-2 space-y-1">
+                                        <li v-for="child in item.children" :key="child.key">
                                             <Link
-                                                :href="sub.href"
-                                                :class="cn('group menu-dropdown-item', isActive(sub.href) ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive')"
+                                                v-if="child.href"
+                                                :href="child.href"
+                                                :class="cn('group menu-dropdown-item', isActive(child.href) ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive')"
                                             >
-                                                {{ sub.name }}
+                                                {{ child.label }}
                                             </Link>
                                         </li>
                                     </ul>
@@ -210,9 +117,9 @@ const groupActive = (item: NavItem): boolean =>
                                     :class="cn('group menu-item', isActive(item.href) ? 'menu-item-active' : 'menu-item-inactive', showContent ? '' : 'lg:justify-center')"
                                 >
                                     <span :class="isActive(item.href) ? 'menu-item-icon-active' : 'menu-item-icon-inactive'">
-                                        <component :is="item.icon" class="size-6 stroke-[1.5px]" />
+                                        <component :is="iconFor(item.icon)" class="size-6 stroke-[1.5px]" />
                                     </span>
-                                    <span v-if="showContent" class="menu-item-text">{{ item.name }}</span>
+                                    <span v-if="showContent" class="menu-item-text">{{ item.label }}</span>
                                 </Link>
                             </SidebarMenuItem>
                         </SidebarMenu>

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Modules\Asset\Database\Seeders\AssetCatalogSeeder;
 use Modules\IAM\Database\Seeders\DevUserSeeder;
+use Modules\IAM\Database\Seeders\NavigationSeeder;
 use Modules\IAM\Database\Seeders\RolesAndPermissionsSeeder;
 use Modules\Ticket\Database\Seeders\TicketAssetRulesSeeder;
 use Modules\Ticket\Database\Seeders\TicketCatalogSeeder;
@@ -22,6 +23,7 @@ class DatabaseSeeder extends Seeder
         $this->call(TicketCatalogSeeder::class);
         $this->call(TicketEvidenceRulesSeeder::class);
         $this->call(TicketAssetRulesSeeder::class);
+        $this->call(NavigationSeeder::class);
         $this->call(DevUserSeeder::class);
     }
 }

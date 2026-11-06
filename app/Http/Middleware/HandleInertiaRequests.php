@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
+use Modules\IAM\Application\Services\NavigationMenuService;
 use Modules\IAM\Domain\Permissions;
 use Modules\Integration\Domain\Models\OutboundEvent;
 use Modules\Ticket\Domain\Enums\TicketStatus;
@@ -49,6 +50,8 @@ class HandleInertiaRequests extends Middleware
                 // Names only, so the UI can hide what the user may not do. The server still enforces every rule.
                 'permissions' => $request->user()?->getAllPermissions()->pluck('name')->values()->all() ?? [],
             ],
+            // The sidebar, already filtered for this person's roles and permissions (see NavigationMenuService).
+            'navigation' => fn (): array => $request->user() instanceof User ? app(NavigationMenuService::class)->forUser($request->user()) : [],
             // Things worth interrupting someone for, shown in the bell of the header. Counted at most once a minute per person.
             'alerts' => fn (): array => $request->user() instanceof User ? $this->alerts($request->user()) : [],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
