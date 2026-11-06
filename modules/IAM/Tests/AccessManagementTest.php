@@ -240,11 +240,11 @@ describe('users', function () {
     });
 
     it('cuts off a technician\'s phone the moment the account is switched off', function () {
-        $user = app(SaveUser::class)->handle(null, userData(['user_type' => 'technician', 'roles' => [RoleName::Technician->value]]), $this->admin)['user'];
+        $user = app(SaveUser::class)->handle(null, userData(['user_type' => 'technician', 'user_code' => 'ENG-001', 'roles' => [RoleName::Technician->value]]), $this->admin)['user'];
         $user->createToken('phone');
         expect($user->tokens()->count())->toBe(1);
 
-        app(SaveUser::class)->handle($user, userData(['user_type' => 'technician', 'roles' => [RoleName::Technician->value], 'is_active' => false]), $this->admin);
+        app(SaveUser::class)->handle($user, userData(['user_type' => 'technician', 'user_code' => 'ENG-001', 'roles' => [RoleName::Technician->value], 'is_active' => false]), $this->admin);
 
         expect($user->tokens()->count())->toBe(0)->and($user->fresh()->is_active)->toBeFalse();
     });
